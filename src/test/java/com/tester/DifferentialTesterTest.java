@@ -11,8 +11,4 @@ class DifferentialTesterTest {
     DifferentialTester dt = new DifferentialTester();
     dt.run();
   }
-
-  @Test
-  void runJunitTests() {
-  }
 }

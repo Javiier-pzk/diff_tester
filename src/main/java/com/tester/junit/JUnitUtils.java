@@ -70,6 +70,9 @@ public class JUnitUtils {
     byte[] codeBytes = code.getBytes();
     byte[] packageNameBytes = packageName.getBytes();
     try {
+      if (Files.exists(Paths.get(filePath))) {
+        Files.delete(Paths.get(filePath));
+      }
       Files.write(Paths.get(filePath), packageNameBytes, StandardOpenOption.CREATE,
               StandardOpenOption.APPEND);
       Files.write(Paths.get(filePath), codeBytes, StandardOpenOption.CREATE,
