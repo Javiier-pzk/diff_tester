@@ -50,4 +50,8 @@ public class Gpt {
       e.printStackTrace();
     }
   }
+
+  public String getLastMessage() {
+    return messages.get(messages.size() - 1).getContent();
+  }
 }
