@@ -3,15 +3,36 @@ package examples.working;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class LabelTest {
+public class LabelTest {
 
-  @Test
-  void testApplyWhenExcluded() {
-    String[] includes = {"includedLabel"};
-    String[] excludes = {"excludedLabel"};
-    Label label = new Label(includes, excludes);
+    @Test
+    void testApply() {
+        String[] includes = {"apple", "banana"};
+        String[] excludes = {"grapefruit"};
 
-    // This will fail on regressive version as it returns true for excluded label not found in 'includes' 
-    assertFalse(label.apply("excludedLabel"));
-  }
+        examples.working.Label workingLabel = new examples.working.Label(includes, excludes);
+
+        // These tests should pass with the working code
+        assertTrue(workingLabel.apply("apple"));
+        assertFalse(workingLabel.apply("grapefruit"));
+        assertFalse(workingLabel.apply("orange"));
+    }
+
+    @Test
+    void testApplyWithRegressedCode() {
+        String[] includes = {"apple", "banana"};
+        String[] excludes = {"grapefruit"};
+
+        examples.regression.Label regressedLabel = new examples.regression.Label(includes, excludes);
+        examples.working.Label workingLabel = new examples.working.Label(includes, excludes);
+
+        // This should pass, as "apple" is included in both versions
+        assertTrue(regressedLabel.apply("apple"));
+
+        // This should fail with the regression version as "grapefruit" is excluded, but regression version will return true
+        assertFalse(regressedLabel.apply("grapefruit"));
+
+        // This test should pass, it's expecting false for non-included "orange" in both versions
+        assertFalse(regressedLabel.apply("orange")); 
+    }
 }

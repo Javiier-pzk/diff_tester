@@ -38,8 +38,8 @@ public class PromptGenerator {
     String exception = JUnitUtils.extractException(e);
     return "The JUnit test suite generated in the previous response produces a compilation error " +
             "when ran against the test class. This is the stack trace of the error:\n\n"
-            + exception + "\n\nBased on this information, please provide a new response after " +
-            "fixing the errors in the code";
+            + exception + "\n\nBased on this information, please generate a new test suite with " +
+            "no compilation errors";
   }
 
   private static String getTestsFailedInWorkingPrompt(TestExecutionSummary workingSummary) {
@@ -49,16 +49,16 @@ public class PromptGenerator {
     return "In the JUnit test suite generated in the previous response, " + workingFailed +
             " tests failed when ran against the working version of the test class.\n" +
             "This is the summary of the failures in the test suite:\n\n" + failuresString +
-            "\n\nBased on this information, please generate a new test suite after fixing the " +
-            "existing errors";
+            "\n\nBased on this information, please generate a new test suite that passes when " +
+            "ran against the working version of the test class";
   }
 
   private static String getNoTestsFailedInRegressionPrompt() {
     return "In the JUnit test suite generated in the previous response, 0 tests failed when ran " +
             "against the regression version of the test class. This means that the test suite " +
             "generated in the previous response is not able to differentiate between the working " +
-            "and regression versions of the test class. Please modify the test suite such that" +
-            "it passes when ran against the working version and fails when ran against the " +
+            "and regression versions of the test class. Please generate a new test suite such " +
+            "that it passes when ran against the working version and fails when ran against the " +
             "regression version.";
   }
 }

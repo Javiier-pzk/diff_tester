@@ -22,10 +22,11 @@ public class JUnitUtils {
 
   private static final String CODE_START = "```java\n";
   private static final String CODE_END = "```";
-  private static final String EXAMPLES_FILE_PATH = "/src/test/java/examples/";
+  private static final String EXAMPLES_FILE_PATH = "src/test/java/examples/";
   private static final String REGRESSION = "regression";
   private static final String WORKING = "working";
   private static final String PACKAGE_NAME = "package examples.";
+  private static final String TARGET_DIR = "target/test-classes";
   private final String fileName;
   private final String workingFilePath;
   private final String regressionFilePath;
@@ -36,10 +37,8 @@ public class JUnitUtils {
     this.fileName = fileName;
     packageNameWorking = PACKAGE_NAME + WORKING + ";\n\n";
     packageNameRegression = PACKAGE_NAME + REGRESSION + ";\n\n";
-    workingFilePath =
-            System.getProperty("user.dir") + EXAMPLES_FILE_PATH + WORKING + "/" + fileName;
-    regressionFilePath =
-            System.getProperty("user.dir") + EXAMPLES_FILE_PATH + REGRESSION + "/" + fileName;
+    workingFilePath = EXAMPLES_FILE_PATH + WORKING + "/" + fileName;
+    regressionFilePath = EXAMPLES_FILE_PATH + REGRESSION + "/" + fileName;
   }
 
   public static String extractException(Throwable e) {
@@ -137,7 +136,7 @@ public class JUnitUtils {
       return false;
     }
     int compilationResult = compiler.run(null, null, null,
-            "-d", "target/test-classes", filePath);
+            "-d", TARGET_DIR, filePath);
     return compilationResult == 0;
   }
 
