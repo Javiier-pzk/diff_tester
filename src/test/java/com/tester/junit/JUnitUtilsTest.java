@@ -1,6 +1,11 @@
 package com.tester.junit;
 
+import com.tester.exceptions.*;
 import org.junit.jupiter.api.*;
+import org.junit.platform.launcher.listeners.TestExecutionSummary;
+import org.junit.platform.launcher.listeners.TestExecutionSummary.Failure;
+
+import java.util.*;
 
 class JUnitUtilsTest {
 
@@ -47,5 +52,19 @@ class JUnitUtilsTest {
     JUnitUtils junitUtils = new JUnitUtils("Label.java");
     String program = junitUtils.readWorkingProgram();
     System.out.println(program);
+  }
+
+  @Test
+  public void extractFailuresTest() {
+    String fileName = "LabelTest.java";
+    JUnitUtils junitUtils = new JUnitUtils(fileName);
+    try {
+      TestExecutionSummary workingSummary = junitUtils.runWorkingTest();
+      List<Failure> failures = workingSummary.getFailures();
+      String result = JUnitUtils.extractFailures(failures);
+      System.out.println(result);
+    } catch (CompilationError e) {
+      e.printStackTrace();
+    }
   }
 }

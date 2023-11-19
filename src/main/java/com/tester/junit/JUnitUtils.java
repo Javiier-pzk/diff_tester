@@ -1,17 +1,21 @@
 package com.tester.junit;
 
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import com.tester.exceptions.CompilationError;
 import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
+import org.junit.platform.launcher.listeners.TestExecutionSummary.Failure;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
 public class JUnitUtils {
@@ -22,18 +26,49 @@ public class JUnitUtils {
   private static final String REGRESSION = "regression";
   private static final String WORKING = "working";
   private static final String PACKAGE_NAME = "package examples.";
+  private final String fileName;
   private final String workingFilePath;
   private final String regressionFilePath;
   private final String packageNameWorking;
   private final String packageNameRegression;
 
   public JUnitUtils(String fileName) {
+    this.fileName = fileName;
     packageNameWorking = PACKAGE_NAME + WORKING + ";\n\n";
     packageNameRegression = PACKAGE_NAME + REGRESSION + ";\n\n";
     workingFilePath =
             System.getProperty("user.dir") + EXAMPLES_FILE_PATH + WORKING + "/" + fileName;
     regressionFilePath =
             System.getProperty("user.dir") + EXAMPLES_FILE_PATH + REGRESSION + "/" + fileName;
+  }
+
+  public static String extractException(Throwable e) {
+    StackTraceElement[] stackTraces = e.getStackTrace();
+    int limit = Math.min(stackTraces.length, 10);
+    StringBuilder sb = new StringBuilder();
+    sb.append("Exception:\n");
+    sb.append(e);
+    for (int i = 0; i < limit; i++) {
+      sb.append(stackTraces[i].toString());
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
+
+  public static String extractFailures(List<Failure> failures) {
+    StringBuilder sb = new StringBuilder();
+    for (Failure failure : failures) {
+      TestIdentifier identifier = failure.getTestIdentifier();
+      sb.append("Method: ");
+      sb.append(identifier.getDisplayName());
+      sb.append("\n");
+      Throwable exception = failure.getException();
+      if (exception != null) {
+        sb.append(extractException(exception));
+      }
+      sb.append("\n");
+    }
+    return sb.toString();
   }
 
   public void extractTest(String response) {
@@ -50,12 +85,12 @@ public class JUnitUtils {
     writeToFile(regressionFilePath, packageNameRegression, code);
   }
 
-  public TestExecutionSummary runWorkingTest() {
-    return runTest(workingFilePath);
+  public TestExecutionSummary runWorkingTest() throws CompilationError {
+    return runTest(workingFilePath, WORKING);
   }
 
-  public TestExecutionSummary runRegressionTest() {
-    return runTest(regressionFilePath);
+  public TestExecutionSummary runRegressionTest() throws CompilationError{
+    return runTest(regressionFilePath, REGRESSION);
   }
 
   public String readWorkingProgram() {
@@ -82,14 +117,28 @@ public class JUnitUtils {
     }
   }
 
-  private TestExecutionSummary runTest(String filePath) {
+  private TestExecutionSummary runTest(String filePath, String type) throws CompilationError {
+    if (!compileTest(filePath)) {
+      throw new CompilationError("Failed to compile " + fileName + " (" + type + ")");
+    }
+    String fullyQualifiedClassName = "examples." + type + "." + getBaseName();
     SummaryGeneratingListener listener = new SummaryGeneratingListener();
     Launcher launcher = LauncherFactory.create();
     launcher.registerTestExecutionListeners(listener);
     launcher.execute(LauncherDiscoveryRequestBuilder.request()
-            .selectors(selectFile(filePath))
+            .selectors(selectClass(fullyQualifiedClassName))
             .build());
     return listener.getSummary();
+  }
+
+  private boolean compileTest(String filePath) {
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    if (compiler == null) {
+      return false;
+    }
+    int compilationResult = compiler.run(null, null, null,
+            "-d", "target/test-classes", filePath);
+    return compilationResult == 0;
   }
 
   private String readProgram(String filePath) {
@@ -100,5 +149,10 @@ public class JUnitUtils {
       e.printStackTrace();
       return "";
     }
+  }
+
+  private String getBaseName() {
+    int dotIndex = fileName.lastIndexOf('.');
+    return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
   }
 }

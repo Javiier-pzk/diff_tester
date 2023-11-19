@@ -8,7 +8,7 @@ class DifferentialTesterTest {
 
   @Test
   void runTest() {
-    DifferentialTester dt = new DifferentialTester();
+    DifferentialTester dt = new DifferentialTester("Label.java", "LabelTest.java", "apply");
     dt.run();
   }
 }
