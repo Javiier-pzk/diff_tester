@@ -28,7 +28,7 @@ public class GptMessage {
 
   @Override
   public String toString() {
-    return "{ role: '" + role + "', content: '" + content + "' }";
+    return "{ role: " + role + ", content: " + content + " }";
   }
 
   public String toJsonString() {

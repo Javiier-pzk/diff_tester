@@ -11,6 +11,7 @@ public class GptResponse {
   private final String model;
   private final List<GptChoice> choices;
   private final GptUsage usage;
+  private final GptError error;
 
   @JsonCreator
   public GptResponse(@JsonProperty("id") String id,
@@ -18,13 +19,15 @@ public class GptResponse {
                      @JsonProperty("created") int created,
                      @JsonProperty("model") String model,
                      @JsonProperty("choices") List<GptChoice> choices,
-                     @JsonProperty("usage") GptUsage usage) {
+                     @JsonProperty("usage") GptUsage usage,
+                     @JsonProperty("error") GptError error) {
     this.id = id;
     this.object = object;
     this.created = created;
     this.model = model;
     this.choices = choices;
     this.usage = usage;
+    this.error = error;
   }
 
   @JsonProperty("id")
@@ -57,14 +60,20 @@ public class GptResponse {
     return usage;
   }
 
+  @JsonProperty("error")
+  public GptError getError() {
+    return error;
+  }
+
   @Override
   public String toString() {
-    return "{\n  id: '" + id + "'," +
-            "\n  object: '" + object + "'," +
+    return "{\n  id: " + id + "," +
+            "\n  object: " + object + "," +
             "\n  created: " + created + "," +
-            "\n  model: '" + model + "'," +
+            "\n  model: " + model + "," +
             "\n  choices: " + choices + "," +
-            "\n  usage: " + usage +
+            "\n  usage: " + usage + "," +
+            "\n  error: " + error +
             "\n}";
   }
 

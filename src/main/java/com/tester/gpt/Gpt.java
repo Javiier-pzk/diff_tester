@@ -3,6 +3,9 @@ package com.tester.gpt;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.http.HttpEntity;
@@ -18,12 +21,15 @@ public class Gpt {
   private final HttpClient httpClient;
   private final String apiKey;
   private final List<GptMessage> messages;
+  private final Logger logger;
 
   public Gpt() {
     Dotenv dotenv = Dotenv.load();
     apiKey = dotenv.get("OPENAI_API_KEY");
     httpClient = HttpClients.createDefault();
     messages = new ArrayList<>();
+    logger = Logger.getLogger(Gpt.class.getName());
+    logger.setLevel(Level.INFO);
   }
 
   public void generate(String prompt, Model model) {
@@ -39,13 +45,19 @@ public class Gpt {
     try {
       HttpResponse response = httpClient.execute(httpPost);
       HttpEntity entity = response.getEntity();
-      if (entity != null) {
-        String responseString = EntityUtils.toString(entity, "UTF-8");
-        GptResponse gptResponse = new ObjectMapper().readValue(responseString, GptResponse.class);
-        List<GptChoice> choices = gptResponse.getChoices();
-        GptChoice choice = choices.get(0);
-        messages.add(choice.getMessage());
+      if (entity == null) {
+        logger.warning("Response is null");
+        return;
       }
+      String responseString = EntityUtils.toString(entity, "UTF-8");
+      GptResponse gptResponse = new ObjectMapper().readValue(responseString, GptResponse.class);
+      if (gptResponse.getError() != null) {
+        logger.severe(gptResponse.getError().toString());
+        return;
+      }
+      List<GptChoice> choices = gptResponse.getChoices();
+      GptChoice choice = choices.get(0);
+      messages.add(choice.getMessage());
     } catch (IOException e) {
       e.printStackTrace();
     }
