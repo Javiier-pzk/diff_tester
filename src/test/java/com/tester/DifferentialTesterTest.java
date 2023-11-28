@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DifferentialTesterTest {
 
   @Test
-  void runTest() {
+  void runLabelTest() {
     DifferentialTester dt = new DifferentialTester("Label.java", "LabelTest.java", "apply");
     dt.run();
   }

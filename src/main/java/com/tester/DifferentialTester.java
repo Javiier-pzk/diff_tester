@@ -16,12 +16,14 @@ public class DifferentialTester {
   private final String targetMethod;
   private final Gpt gpt;
   private final Logger logger;
+  private final JUnitUtils junitUtils;
 
   public DifferentialTester(String programFileName, String testFileName, String targetMethod) {
     this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
     gpt = new Gpt();
+    junitUtils = new JUnitUtils(testFileName);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
@@ -31,6 +33,7 @@ public class DifferentialTester {
     this.testFileName = testFileName;
     this.targetMethod = "";
     gpt = new Gpt();
+    junitUtils = new JUnitUtils(testFileName);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
@@ -42,7 +45,6 @@ public class DifferentialTester {
       gpt.generate(prompt, Model.GPT4);
       String content = gpt.getLastMessage();
       logger.info("Gpt response:\n" + content + "\n");
-      JUnitUtils junitUtils = new JUnitUtils(testFileName);
       junitUtils.extractTest(content);
       try {
         TestExecutionSummary workingSummary = junitUtils.runWorkingTest();
