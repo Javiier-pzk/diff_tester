@@ -21,6 +21,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 public class JUnitUtils {
 
   private static final String CODE_START = "```java\n";
+  private static final String CODE_START_CAPITAL = "```Java\n";
   private static final String CODE_END = "```";
   private static final String EXAMPLES_FILE_PATH = "src/test/java/examples/";
   private static final String REGRESSION = "regression";
@@ -71,9 +72,16 @@ public class JUnitUtils {
   }
 
   public void extractTest(String response) {
-    int startIndex = response.indexOf(CODE_START);
-    if (startIndex == -1) {
+    int startIndex = 0;
+    int codeStartIndex = response.indexOf(CODE_START);
+    int codeStartCapitalIndex = response.indexOf(CODE_START_CAPITAL);
+    if (codeStartIndex == -1 && codeStartCapitalIndex == -1) {
       return;
+    }
+    if (codeStartIndex != -1) {
+      startIndex = codeStartIndex;
+    } else {
+      startIndex = codeStartCapitalIndex;
     }
     int endIndex = response.indexOf(CODE_END, startIndex + 1);
     if (endIndex == -1) {
@@ -117,7 +125,7 @@ public class JUnitUtils {
   }
 
   private TestExecutionSummary runTest(String filePath, String type) throws CompilationError {
-    if (!compileTest(filePath)) {
+    if (!compileTest(filePath, type)) {
       throw new CompilationError("Failed to compile " + fileName + " (" + type + ")");
     }
     String fullyQualifiedClassName = "examples." + type + "." + getBaseName();
@@ -130,7 +138,13 @@ public class JUnitUtils {
     return listener.getSummary();
   }
 
-  private boolean compileTest(String filePath) {
+  private boolean compileTest(String filePath, String type) {
+    try {
+      String classFilePath = TARGET_DIR + "/examples/" + type + "/" + getBaseName() + ".class";
+      Files.deleteIfExists(Paths.get(classFilePath));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       return false;

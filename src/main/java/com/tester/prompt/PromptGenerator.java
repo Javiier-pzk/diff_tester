@@ -22,8 +22,10 @@ public class PromptGenerator {
             "\n\nHere is the buggy version of the class:\n\n" + regressionProgram +
             "\n\nWith this information, generate a JUnit5 test that when run on both versions, " +
             "produces different results, i.e., passes for the working version and fails for the " +
-            "regression version. You do not have to provide any package statement or import " +
-            "statements for the test class";
+            "regression version. In the generated test suite, you do not have to provide any " +
+            "package statement or import statements related to the test class. However, for all " +
+            "other dependencies, please include all necessary import statements required " +
+            "for the test suite to compile";
   }
 
   public static String getFailurePrompt(TestExecutionSummary workingSummary) {
@@ -39,7 +41,10 @@ public class PromptGenerator {
     return "The JUnit test suite generated in the previous response produces a compilation error " +
             "when ran against the test class. This is the stack trace of the error:\n\n"
             + exception + "\n\nBased on this information, please generate a new test suite with " +
-            "no compilation errors";
+            "no compilation errors. In the new test suite, you do not have to provide any " +
+            "package statement or import statements related to the test class. However, for all " +
+            "other dependencies, please include all necessary import statements required " +
+            "for the test suite to compile";
   }
 
   private static String getTestsFailedInWorkingPrompt(TestExecutionSummary workingSummary) {
@@ -50,7 +55,10 @@ public class PromptGenerator {
             " tests failed when ran against the working version of the test class.\n" +
             "This is the summary of the failures in the test suite:\n\n" + failuresString +
             "\n\nBased on this information, please generate a new test suite that passes when " +
-            "ran against the working version of the test class";
+            "ran against the working version of the test class. In the new test suite, you do " +
+            "not have to provide any package statement or import statements related to the test " +
+            "class. However, for all other dependencies, please include all necessary import " +
+            "statements required for the test suite to compile";
   }
 
   private static String getNoTestsFailedInRegressionPrompt() {
@@ -59,6 +67,9 @@ public class PromptGenerator {
             "generated in the previous response is not able to differentiate between the working " +
             "and regression versions of the test class. Please generate a new test suite such " +
             "that it passes when ran against the working version and fails when ran against the " +
-            "regression version.";
+            "regression version. In the new test suite, you do not have to provide any package " +
+            "statement or import statements related to the test class. However, for all other " +
+            "dependencies, please include all necessary import statements required for the test " +
+            "suite to compile";
   }
 }
