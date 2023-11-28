@@ -72,7 +72,7 @@ public class JUnitUtils {
   }
 
   public void extractTest(String response) {
-    int startIndex = 0;
+    int startIndex;
     int codeStartIndex = response.indexOf(CODE_START);
     int codeStartCapitalIndex = response.indexOf(CODE_START_CAPITAL);
     if (codeStartIndex == -1 && codeStartCapitalIndex == -1) {
