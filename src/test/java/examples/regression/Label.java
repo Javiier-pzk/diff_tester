@@ -23,7 +23,6 @@ public class Label {
 
   public boolean apply(String label) {
     if (excludes != null) {
-      System.out.println(Arrays.binarySearch(excludes, label));
       return Arrays.binarySearch(excludes, label) == -1;
     }
 
