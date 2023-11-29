@@ -1,34 +1,42 @@
 package examples.regression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
-class LabelTest {
+public class LabelTest {
 
-    @Test
-    void applyTestWithIncludesOnly() {
-        String[] includes = {"abc", "xyz"};
-        String[] excludes = null;
-        Label label = new Label(includes, excludes);
-        assertTrue(label.apply("abc"));
-        assertFalse(label.apply("pqr"));
-    }
+  @Test
+  public void testLabelExcludesPresent() {
+    Label labelObj = new Label(null, new String[]{"testLabel"});
+    boolean result = labelObj.apply("testLabel");
+    assertEquals(false, result);
+  }
 
-    @Test
-    void applyTestWithExcludesOnly() {
-        String[] includes = null;
-        String[] excludes = {"abc", "xyz"};
-        Label label = new Label(includes, excludes);
-        assertTrue(label.apply("pqr"));
-        assertFalse(label.apply("abc"));
-    }
+  @Test
+  public void testLabelExcludesAbsentAndIncludePresent() {
+    Label labelObj = new Label(new String[]{"testLabel"}, null);
+    boolean result = labelObj.apply("testLabel");
+    assertEquals(true, result);
+  }
 
-    @Test
-    void applyTestWithBothIncludesAndExcludes() {
-        String[] includes = {"abc", "xyz"};
-        String[] excludes = {"pqr", "def"};
-        Label label = new Label(includes, excludes);
-        assertTrue(label.apply("abc"));
-        assertFalse(label.apply("pqr"));
-    }
+  @Test
+  public void testLabelExcludesAbsentAndIncludeAbsent() {
+    Label labelObj = new Label(null, null);
+    boolean result = labelObj.apply("testLabel");
+    assertEquals(true, result);
+  }
+
+  @Test
+  public void testLabelIncludesPresentAndExcludesAbsent() {
+    Label labelObj = new Label(new String[]{"testLabel"}, new String[]{});
+    boolean result = labelObj.apply("testLabel");
+    assertEquals(true, result);
+  }
+
+  @Test
+  public void testLabelExcludesPresentAndIncludePresent() {
+    Label labelObj = new Label(new String[]{"testLabel"}, new String[]{"testLabel"});
+    boolean result = labelObj.apply("testLabel");
+    assertEquals(false, result);
+  }
 }

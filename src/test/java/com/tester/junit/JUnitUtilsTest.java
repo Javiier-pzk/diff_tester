@@ -1,13 +1,15 @@
 package com.tester.junit;
 
-import com.tester.exceptions.*;
-import org.junit.jupiter.api.*;
+import com.tester.exceptions.CompilationError;
+import org.junit.jupiter.api.Test;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import org.junit.platform.launcher.listeners.TestExecutionSummary.Failure;
 
 import java.util.*;
 
 class JUnitUtilsTest {
+
+  private final JUnitUtils junitUtils = new JUnitUtils("Label.java", "LabelTest.java", "apply");
 
   @Test
   void extractTest() {
@@ -42,27 +44,31 @@ class JUnitUtilsTest {
             "\n" +
             "So this test case will pass for the correctly functioning `Label` class, and fail " +
             "for the buggy version.";
-    String fileName = "LabelTest.java";
-    JUnitUtils junitUtils = new JUnitUtils(fileName);
     junitUtils.extractTest(response);
   }
 
   @Test
   public void readProgramTest() {
-    JUnitUtils junitUtils = new JUnitUtils("Label.java");
     String program = junitUtils.readWorkingProgram();
     System.out.println(program);
   }
 
   @Test
   public void extractFailuresTest() {
-    String fileName = "LabelTest.java";
-    JUnitUtils junitUtils = new JUnitUtils(fileName);
     try {
       TestExecutionSummary workingSummary = junitUtils.runWorkingTest();
       List<Failure> failures = workingSummary.getFailures();
-      String result = JUnitUtils.extractFailures(failures);
+      String result = junitUtils.extractFailures(failures);
       System.out.println(result);
+    } catch (CompilationError e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void extractCoverageTest() {
+    try {
+      junitUtils.runWorkingTest();
     } catch (CompilationError e) {
       e.printStackTrace();
     }

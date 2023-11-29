@@ -1,5 +1,6 @@
 package com.tester;
 
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.tester.exceptions.CompilationError;
@@ -11,7 +12,6 @@ import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
 public class DifferentialTester {
 
-  private final String programFileName;
   private final String testFileName;
   private final String targetMethod;
   private final Gpt gpt;
@@ -19,27 +19,28 @@ public class DifferentialTester {
   private final JUnitUtils junitUtils;
 
   public DifferentialTester(String programFileName, String testFileName, String targetMethod) {
-    this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
     gpt = new Gpt();
-    junitUtils = new JUnitUtils(testFileName);
+    junitUtils = new JUnitUtils(programFileName, testFileName, targetMethod);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
 
   public DifferentialTester(String programFileName, String testFileName) {
-    this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = "";
     gpt = new Gpt();
-    junitUtils = new JUnitUtils(testFileName);
+    junitUtils = new JUnitUtils(programFileName, testFileName);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
 
   public void run() {
-    String prompt = PromptGenerator.getInitialPrompt(programFileName, targetMethod);
+    String workingProgram = junitUtils.readWorkingProgram();
+    String regressionProgram = junitUtils.readRegressionProgram();
+    String prompt = PromptGenerator.getInitialPrompt(
+            workingProgram, regressionProgram, targetMethod);
     while (true) {
       logger.info("Prompt:\n" + prompt + "\n");
       gpt.generate(prompt, Model.GPT4);
@@ -65,10 +66,17 @@ public class DifferentialTester {
           break;
         }
         logger.info("Failed to detect regression bug. Re-prompting...\n");
-        prompt = PromptGenerator.getFailurePrompt(workingSummary);
+        if (regressionFailed == 0) {
+          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt();
+          continue;
+        }
+        List<TestExecutionSummary.Failure> failures = workingSummary.getFailures();
+        String failuresString = junitUtils.extractFailures(failures);
+        prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
       } catch (CompilationError e) {
         logger.info("Failed to compile test suite. Re-prompting...\n");
-        prompt = PromptGenerator.getCompileErrorPrompt(e);
+        String exception = junitUtils.extractException(e);
+        prompt = PromptGenerator.getCompileErrorPrompt(exception);
       }
     }
   }
