@@ -65,11 +65,20 @@ public class PromptGenerator {
     return "In the JUnit test suite generated in the previous response, 0 tests failed when ran " +
             "against the regression version of the test class. This means that the test suite " +
             "generated in the previous response is not able to differentiate between the working " +
-            "and regression versions of the test class. Please generate a new test suite such " +
-            "that it passes when ran against the working version and fails when ran against the " +
-            "regression version. In the new test suite, you do not have to provide any package " +
-            "statement or import statements related to the test class. However, for all other " +
-            "dependencies, please include all necessary import statements required for the test " +
-            "suite to compile";
+            "and regression versions of the test class. I will you some extra information on why " +
+            "the buggy version causes a bug: " + getSuspiciousLinesPrompt() + " Based on this " +
+            "additional information, please generate a new test suite that contains test cases " +
+            "that factor in this extra information such that it passes when " +
+            "ran against the working version and fails when ran against the regression version. " +
+            "In the new test suite, you do not have to provide any package statement or import " +
+            "statements related to the test class. However, for all other dependencies, " +
+            "please include all necessary import statements required for the test suite to compile";
+  }
+
+  private static String getSuspiciousLinesPrompt() {
+    return "The buggy code uses \"== -1\" when determining whether label exists in \"excludes\". " +
+            "However, Arrays.binarySearch() returns a negative number when no element is found, " +
+            "not just -1. This can lead to some labels that should be excluded not being excluded" +
+            " properly.";
   }
 }
