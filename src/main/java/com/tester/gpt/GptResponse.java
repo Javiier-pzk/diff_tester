@@ -12,6 +12,7 @@ public class GptResponse {
   private final List<GptChoice> choices;
   private final GptUsage usage;
   private final GptError error;
+  private final String systemFingerprint;
 
   @JsonCreator
   public GptResponse(@JsonProperty("id") String id,
@@ -20,7 +21,8 @@ public class GptResponse {
                      @JsonProperty("model") String model,
                      @JsonProperty("choices") List<GptChoice> choices,
                      @JsonProperty("usage") GptUsage usage,
-                     @JsonProperty("error") GptError error) {
+                     @JsonProperty("error") GptError error,
+                     @JsonProperty("system_fingerprint") String systemFingerprint) {
     this.id = id;
     this.object = object;
     this.created = created;
@@ -28,6 +30,7 @@ public class GptResponse {
     this.choices = choices;
     this.usage = usage;
     this.error = error;
+    this.systemFingerprint = systemFingerprint;
   }
 
   @JsonProperty("id")
@@ -64,6 +67,12 @@ public class GptResponse {
   public GptError getError() {
     return error;
   }
+
+  @JsonProperty("system_fingerprint")
+  public String getSystemFingerprint() {
+    return systemFingerprint;
+  }
+
 
   @Override
   public String toString() {
