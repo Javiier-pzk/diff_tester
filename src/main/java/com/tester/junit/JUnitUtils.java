@@ -125,6 +125,14 @@ public class JUnitUtils {
     return readProgram(getFilePath(MAIN, REGRESSION, programFileName));
   }
 
+  public String extractWorkingTestCoverageInfo() {
+    return extractTestCoverageInfo(WORKING);
+  }
+
+  public String extractRegressionTestCoverageInfo() {
+    return extractTestCoverageInfo(REGRESSION);
+  }
+
   private void writeToFile(String type, String code) {
     byte[] codeBytes = code.getBytes();
     String packageName = getPackageName(type);
@@ -155,7 +163,6 @@ public class JUnitUtils {
             .selectors(selectClass(fullyQualifiedClassName))
             .build());
     String coverageInfo = extractTestCoverageInfo(type);
-    System.out.println(coverageInfo);
     return listener.getSummary();
   }
 

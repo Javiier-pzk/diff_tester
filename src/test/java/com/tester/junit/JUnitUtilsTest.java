@@ -67,10 +67,7 @@ class JUnitUtilsTest {
 
   @Test
   public void extractCoverageTest() {
-    try {
-      junitUtils.runWorkingTest();
-    } catch (CompilationError e) {
-      e.printStackTrace();
-    }
+    String coverageInfo = junitUtils.extractWorkingTestCoverageInfo();
+    System.out.println(coverageInfo);
   }
 }
