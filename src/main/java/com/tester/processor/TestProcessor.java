@@ -1,32 +1,26 @@
-package com.tester.junit;
+package com.tester.processor;
 
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.List;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import com.tester.exceptions.CompilationError;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.IMethodCoverage;
 import org.jacoco.core.tools.ExecFileLoader;
-import org.junit.platform.launcher.Launcher;
-import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
-import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import org.junit.platform.launcher.listeners.TestExecutionSummary.Failure;
-import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
-public class JUnitUtils {
+
+public class TestProcessor {
 
   private static final String CODE_START = "```java\n";
   private static final String CODE_END = "```";
@@ -38,21 +32,19 @@ public class JUnitUtils {
   private static final String TEST = "test/java/";
   private static final String CLASS = ".class";
   private static final String EXAMPLES = "examples";
-  private static final String TARGET = "target/";
-  private static final String TEST_CLASSES = "test-classes/";
-  private static final String CLASSES = "classes/";
+  private static final String TARGET_DIR = "target/classes";
   private static final String JACOCO_EXEC_FILE_PATH = "target/jacoco.exec";
   private final String programFileName;
   private final String testFileName;
   private final String targetMethod;
 
-  public JUnitUtils(String programFileName, String testFileName, String targetMethod) {
+  public TestProcessor(String programFileName, String testFileName, String targetMethod) {
     this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
   }
 
-  public JUnitUtils(String programFileName, String testFileName) {
+  public TestProcessor(String programFileName, String testFileName) {
     this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = "";
@@ -71,18 +63,26 @@ public class JUnitUtils {
     return sb.toString();
   }
 
-  public String extractFailures(List<Failure> failures) {
+  public String extractFailures(List<MavenTestFailure> failures) {
     StringBuilder sb = new StringBuilder();
-    for (Failure failure : failures) {
-      TestIdentifier identifier = failure.getTestIdentifier();
+    for (MavenTestFailure failure : failures) {
       sb.append("Method: ");
-      sb.append(identifier.getDisplayName());
+      sb.append(failure.getMethodName());
       sb.append("\n");
-      Throwable exception = failure.getException();
-      if (exception != null) {
-        sb.append(extractException(exception));
+      int lineNum = failure.getFailureLineNumber();
+      String programLine = getFailedLine(lineNum);
+      sb.append("Line ");
+      sb.append(lineNum);
+      sb.append(": ");
+      sb.append(programLine);
+      sb.append("\n");
+      List<String> stackTrace = failure.getStackTrace();
+      int limit = Math.min(stackTrace.size(), 10);
+      sb.append("Exception:\n");
+      for (int i = 0; i < limit; i++) {
+        sb.append(stackTrace.get(i));
+        sb.append("\n");
       }
-      sb.append("\n");
     }
     return sb.toString();
   }
@@ -109,12 +109,12 @@ public class JUnitUtils {
     writeToFile(REGRESSION, code);
   }
 
-  public TestExecutionSummary runWorkingTest() throws CompilationError {
-    return runTest(WORKING);
+  public MavenTestExecutionSummary runWorkingTest() throws MavenInvocationException {
+    return MavenTestExecutor.execute(getQualifiedClassName(WORKING));
   }
 
-  public TestExecutionSummary runRegressionTest() throws CompilationError{
-    return runTest(REGRESSION);
+  public MavenTestExecutionSummary runRegressionTest() throws MavenInvocationException {
+    return MavenTestExecutor.execute(getQualifiedClassName(REGRESSION));
   }
 
   public String readWorkingProgram() {
@@ -142,44 +142,31 @@ public class JUnitUtils {
       if (Files.exists(Paths.get(filePath))) {
         Files.delete(Paths.get(filePath));
       }
-      Files.write(Paths.get(filePath), packageNameBytes, StandardOpenOption.CREATE,
+      FileChannel channel = FileChannel.open(Paths.get(filePath), StandardOpenOption.CREATE,
               StandardOpenOption.APPEND);
-      Files.write(Paths.get(filePath), codeBytes, StandardOpenOption.CREATE,
-              StandardOpenOption.APPEND);
+      channel.write(ByteBuffer.wrap(packageNameBytes));
+      channel.write(ByteBuffer.wrap(codeBytes));
+      channel.force(true);
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
-  private TestExecutionSummary runTest(String type) throws CompilationError {
-    if (!compileTest(type)) {
-      throw new CompilationError("Failed to compile " + getFilePath(TEST, type, testFileName));
-    }
-    String fullyQualifiedClassName = getQualifiedClassName(type);
-    SummaryGeneratingListener listener = new SummaryGeneratingListener();
-    Launcher launcher = LauncherFactory.create();
-    launcher.registerTestExecutionListeners(listener);
-    launcher.execute(LauncherDiscoveryRequestBuilder.request()
-            .selectors(selectClass(fullyQualifiedClassName))
-            .build());
-    String coverageInfo = extractTestCoverageInfo(type);
-    return listener.getSummary();
-  }
-
-  private boolean compileTest(String type) {
+  private String getFailedLine(int lineNum) {
+    int currLineNum = 1;
+    String filePath = getFilePath(TEST, WORKING, testFileName);
     try {
-      String classFilePath = getClassPath(TEST_CLASSES, type, testFileName);
-      Files.deleteIfExists(Paths.get(classFilePath));
+      BufferedReader reader = new BufferedReader(new FileReader(filePath));
+      String line = reader.readLine();
+      while (line != null && currLineNum < lineNum) {
+        line = reader.readLine();
+        currLineNum++;
+      }
+      return line;
     } catch (IOException e) {
       e.printStackTrace();
+      return "";
     }
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    if (compiler == null) {
-      return false;
-    }
-    int compilationResult = compiler.run(null, null, null,
-            "-d", TARGET + TEST_CLASSES, getFilePath(TEST, type, testFileName));
-    return compilationResult == 0;
   }
 
   private String extractTestCoverageInfo(String type) {
@@ -189,7 +176,7 @@ public class JUnitUtils {
       loader.load(new File(JACOCO_EXEC_FILE_PATH));
       CoverageBuilder coverageBuilder = new CoverageBuilder();
       Analyzer analyzer = new Analyzer(loader.getExecutionDataStore(), coverageBuilder);
-      analyzer.analyzeAll(new File(getClassPath(CLASSES, type, programFileName)));
+      analyzer.analyzeAll(new File(getClassPath(type, programFileName)));
       StringBuilder sb = new StringBuilder();
       for (final IClassCoverage cc : coverageBuilder.getClasses()) {
         sb.append("Class name: ");
@@ -248,8 +235,8 @@ public class JUnitUtils {
     return SRC + dir + EXAMPLES + "/" + type + "/" + fileName;
   }
 
-  private String getClassPath(String dir, String type, String fileName) {
-    return TARGET + dir + EXAMPLES + "/" + type + "/" + getBaseName(fileName) + CLASS;
+  private String getClassPath(String type, String fileName) {
+    return TARGET_DIR + EXAMPLES + "/" + type + "/" + getBaseName(fileName) + CLASS;
   }
 
   private String getQualifiedClassName(String type) {

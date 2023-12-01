@@ -1,42 +1,30 @@
 package examples.working;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LabelTest {
-
+  
   @Test
-  public void testLabelExcludesPresent() {
-    Label labelObj = new Label(null, new String[]{"testLabel"});
-    boolean result = labelObj.apply("testLabel");
-    assertEquals(false, result);
+  public void testApply() {
+    String[] includes = { "a", "b", "c" };
+    String[] excludes = { "d", "e", "f" };
+    Label label = new Label(includes, excludes);
+    assertFalse(label.apply("a"));
+    assertFalse(label.apply("d"));
   }
 
   @Test
-  public void testLabelExcludesAbsentAndIncludePresent() {
-    Label labelObj = new Label(new String[]{"testLabel"}, null);
-    boolean result = labelObj.apply("testLabel");
-    assertEquals(true, result);
+  public void testApplyWithNullIncluding() {
+    String[] excludes = { "d", "e", "f" };
+    Label label = new Label(null, excludes);
+    assertFalse(label.apply("d"));
   }
 
   @Test
-  public void testLabelExcludesAbsentAndIncludeAbsent() {
-    Label labelObj = new Label(null, null);
-    boolean result = labelObj.apply("testLabel");
-    assertEquals(true, result);
-  }
-
-  @Test
-  public void testLabelIncludesPresentAndExcludesAbsent() {
-    Label labelObj = new Label(new String[]{"testLabel"}, new String[]{});
-    boolean result = labelObj.apply("testLabel");
-    assertEquals(true, result);
-  }
-
-  @Test
-  public void testLabelExcludesPresentAndIncludePresent() {
-    Label labelObj = new Label(new String[]{"testLabel"}, new String[]{"testLabel"});
-    boolean result = labelObj.apply("testLabel");
-    assertEquals(false, result);
+  public void testApplyWithNullExcluding() {
+    String[] includes = { "a", "b", "c" };
+    Label label = new Label(includes, null);
+    assertTrue(label.apply("a"));
   }
 }

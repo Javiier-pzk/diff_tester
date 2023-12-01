@@ -1,15 +1,14 @@
-package com.tester.junit;
+package com.tester.processor;
 
-import com.tester.exceptions.CompilationError;
+import java.util.List;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import org.junit.platform.launcher.listeners.TestExecutionSummary.Failure;
 
-import java.util.*;
 
-class JUnitUtilsTest {
+class TestProcessorTest {
 
-  private final JUnitUtils junitUtils = new JUnitUtils("Label.java", "LabelTest.java", "apply");
+  private final TestProcessor testProcessor = new TestProcessor("Label.java", "LabelTest.java",
+          "apply");
 
   @Test
   void extractTest() {
@@ -44,30 +43,30 @@ class JUnitUtilsTest {
             "\n" +
             "So this test case will pass for the correctly functioning `Label` class, and fail " +
             "for the buggy version.";
-    junitUtils.extractTest(response);
+    testProcessor.extractTest(response);
   }
 
   @Test
   public void readProgramTest() {
-    String program = junitUtils.readWorkingProgram();
+    String program = testProcessor.readWorkingProgram();
     System.out.println(program);
   }
 
   @Test
   public void extractFailuresTest() {
     try {
-      TestExecutionSummary workingSummary = junitUtils.runWorkingTest();
-      List<Failure> failures = workingSummary.getFailures();
-      String result = junitUtils.extractFailures(failures);
+      MavenTestExecutionSummary workingSummary = testProcessor.runWorkingTest();
+      List<MavenTestFailure> failures = workingSummary.getFailures();
+      String result = testProcessor.extractFailures(failures);
       System.out.println(result);
-    } catch (CompilationError e) {
+    } catch (MavenInvocationException e) {
       e.printStackTrace();
     }
   }
 
   @Test
   public void extractCoverageTest() {
-    String coverageInfo = junitUtils.extractWorkingTestCoverageInfo();
+    String coverageInfo = testProcessor.extractWorkingTestCoverageInfo();
     System.out.println(coverageInfo);
   }
 }

@@ -16,10 +16,11 @@ public class PromptGenerator {
             "\n\nHere is the buggy version of the class:\n\n" + regressionProgram +
             "\n\nWith this information, generate a JUnit5 test that when run on both versions, " +
             "produces different results, i.e., passes for the working version and fails for the " +
-            "regression version. In the generated test suite, you do not have to provide any " +
-            "package statement or import statements related to the test class. However, for all " +
-            "other dependencies, please include all necessary import statements required " +
-            "for the test suite to compile";
+            "regression version. It is very important that the test suite you generate must pass " +
+            "when run on the working version at least. In the generated test suite, you do not " +
+            "have to provide any package statement or import statements related to the test " +
+            "class. However, for all other dependencies, please include all necessary import " +
+            "statements required for the test suite to compile";
   }
 
   public static String getCompileErrorPrompt(String exception) {
@@ -43,14 +44,17 @@ public class PromptGenerator {
             "statements required for the test suite to compile";
   }
 
-  public static String getNoTestsFailedInRegressionPrompt() {
+  public static String getNoTestsFailedInRegressionPrompt(String coverage) {
     return "In the JUnit test suite generated in the previous response, 0 tests failed when ran " +
             "against the regression version of the test class. This means that the test suite " +
             "generated in the previous response is not able to differentiate between the working " +
             "and regression versions of the test class. I will you some extra information on why " +
-            "the buggy version causes a bug: " + getSuspiciousLinesPrompt() + " Based on this " +
-            "additional information, please generate a new test suite that contains test cases " +
-            "that factor in this extra information such that it passes when " +
+            "the buggy version causes a bug as well as the coverage information of the test suite" +
+            ". Here is the the reason the bug happens:\n" + getSuspiciousLinesPrompt() +
+            "\n And here is the coverage information: \n" + coverage +
+            "\nBased on this additional information, please generate a new test suite that " +
+            "achieves a higher branch coverage for the method in question and " +
+            "contains test cases that factor in this extra information such that it passes when " +
             "ran against the working version and fails when ran against the regression version. " +
             "In the new test suite, you do not have to provide any package statement or import " +
             "statements related to the test class. However, for all other dependencies, " +

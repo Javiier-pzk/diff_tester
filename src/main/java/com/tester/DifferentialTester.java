@@ -3,12 +3,13 @@ package com.tester;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.tester.exceptions.CompilationError;
 import com.tester.gpt.Gpt;
 import com.tester.gpt.Model;
-import com.tester.junit.JUnitUtils;
+import com.tester.processor.TestProcessor;
+import com.tester.processor.MavenTestExecutionSummary;
+import com.tester.processor.MavenTestFailure;
 import com.tester.prompt.PromptGenerator;
-import org.junit.platform.launcher.listeners.TestExecutionSummary;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 
 public class DifferentialTester {
 
@@ -16,13 +17,13 @@ public class DifferentialTester {
   private final String targetMethod;
   private final Gpt gpt;
   private final Logger logger;
-  private final JUnitUtils junitUtils;
+  private final TestProcessor testProcessor;
 
   public DifferentialTester(String programFileName, String testFileName, String targetMethod) {
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
     gpt = new Gpt();
-    junitUtils = new JUnitUtils(programFileName, testFileName, targetMethod);
+    testProcessor = new TestProcessor(programFileName, testFileName, targetMethod);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
@@ -31,14 +32,14 @@ public class DifferentialTester {
     this.testFileName = testFileName;
     this.targetMethod = "";
     gpt = new Gpt();
-    junitUtils = new JUnitUtils(programFileName, testFileName);
+    testProcessor = new TestProcessor(programFileName, testFileName);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
 
   public void run() {
-    String workingProgram = junitUtils.readWorkingProgram();
-    String regressionProgram = junitUtils.readRegressionProgram();
+    String workingProgram = testProcessor.readWorkingProgram();
+    String regressionProgram = testProcessor.readRegressionProgram();
     String prompt = PromptGenerator.getInitialPrompt(
             workingProgram, regressionProgram, targetMethod);
     while (true) {
@@ -46,14 +47,14 @@ public class DifferentialTester {
       gpt.generate(prompt, Model.GPT4);
       String content = gpt.getLastMessage();
       logger.info("Gpt response:\n" + content + "\n");
-      junitUtils.extractTest(content);
+      testProcessor.extractTest(content);
       try {
-        TestExecutionSummary workingSummary = junitUtils.runWorkingTest();
-        TestExecutionSummary regressionSummary = junitUtils.runRegressionTest();
+        MavenTestExecutionSummary workingSummary = testProcessor.runWorkingTest();
+        MavenTestExecutionSummary regressionSummary = testProcessor.runRegressionTest();
         long workingPassed = workingSummary.getTestsSucceededCount();
-        long workingFailed = workingSummary.getTotalFailureCount();
+        long workingFailed = workingSummary.getTestsFailedCount();
         long regressionPassed = regressionSummary.getTestsSucceededCount();
-        long regressionFailed = regressionSummary.getTotalFailureCount();
+        long regressionFailed = regressionSummary.getTestsFailedCount();
         logger.info(
                 "Tests passed on working version: " + workingPassed + "\n" +
                 "Tests passed on regression version: " + regressionPassed + "\n" +
@@ -67,15 +68,16 @@ public class DifferentialTester {
         }
         logger.info("Failed to detect regression bug. Re-prompting...\n");
         if (regressionFailed == 0) {
-          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt();
+          String workingCoverage = testProcessor.extractWorkingTestCoverageInfo();
+          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(workingCoverage);
           continue;
         }
-        List<TestExecutionSummary.Failure> failures = workingSummary.getFailures();
-        String failuresString = junitUtils.extractFailures(failures);
+        List<MavenTestFailure> failures = workingSummary.getFailures();
+        String failuresString = testProcessor.extractFailures(failures);
         prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
-      } catch (CompilationError e) {
+      } catch (MavenInvocationException e) {
         logger.info("Failed to compile test suite. Re-prompting...\n");
-        String exception = junitUtils.extractException(e);
+        String exception = testProcessor.extractException(e);
         prompt = PromptGenerator.getCompileErrorPrompt(exception);
       }
     }
