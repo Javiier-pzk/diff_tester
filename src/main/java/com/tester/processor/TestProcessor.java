@@ -32,7 +32,7 @@ public class TestProcessor {
   private static final String TEST = "test/java/";
   private static final String CLASS = ".class";
   private static final String EXAMPLES = "examples";
-  private static final String TARGET_DIR = "target/classes";
+  private static final String TARGET_DIR = "target/classes/";
   private static final String JACOCO_EXEC_FILE_PATH = "target/jacoco.exec";
   private final String programFileName;
   private final String testFileName;
