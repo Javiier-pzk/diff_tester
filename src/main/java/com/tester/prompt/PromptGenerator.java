@@ -19,18 +19,24 @@ public class PromptGenerator {
             "regression version. It is very important that the test suite you generate must pass " +
             "when run on the working version at least. In the generated test suite, you do not " +
             "have to provide any package statement or import statements related to the test " +
-            "class. However, for all other dependencies, please include all necessary import " +
-            "statements required for the test suite to compile";
+            "class. Moreover, in the test code, you do not need to use the fully qualified name " +
+            "of the test class, you can just use the base name of the class as provided the " +
+            "working and regression versions. However, for all other dependencies, please " +
+            "include all necessary import statements required for the test suite to compile";
   }
 
-  public static String getCompileErrorPrompt(String exception) {
-    return "The JUnit test suite generated in the previous response produces a compilation error " +
-            "when ran against the test class. This is the stack trace of the error:\n\n"
-            + exception + "\n\nBased on this information, please generate a new test suite with " +
-            "no compilation errors. In the new test suite, you do not have to provide any " +
-            "package statement or import statements related to the test class. However, for all " +
-            "other dependencies, please include all necessary import statements required " +
-            "for the test suite to compile";
+  public static String getCompileErrorPrompt(String failuresString) {
+    return "In the JUnit test suite generated in the previous response, there is a compilation " +
+            "error when against the working version of the test class.\n" +
+            "This is the summary of the compilation errors in the test suite:\n\n" +
+            failuresString + "\n\nBased on this information, please generate a new test " +
+            "suite that fixes this compilation error and passes when ran against " +
+            "the working version of the test class. In the new test suite, you do not have to " +
+            "provide any package statement or import statements related to the test class. " +
+            "Moreover, in the test code, you do not need to use the fully qualified name of " +
+            "the test class, you can just use the base name of the class as provided the " +
+            "working version. However, for all other dependencies, please include all necessary " +
+            "import statements required for the test suite to compile";
   }
 
   public static String getTestsFailedInWorkingPrompt(long workingFailed, String failuresString) {
@@ -40,11 +46,31 @@ public class PromptGenerator {
             "\n\nBased on this information, please generate a new test suite that passes when " +
             "ran against the working version of the test class. In the new test suite, you do " +
             "not have to provide any package statement or import statements related to the test " +
-            "class. However, for all other dependencies, please include all necessary import " +
-            "statements required for the test suite to compile";
+            "class. Moreover, in the test code, you do not need to use the fully qualified name " +
+            "of the test class, you can just use the base name of the class as provided the " +
+            "working version. However, for all other dependencies, please include all necessary " +
+            "import statements required for the test suite to compile";
   }
 
   public static String getNoTestsFailedInRegressionPrompt(String coverage) {
+    return "In the JUnit test suite generated in the previous response, 0 tests failed when ran " +
+            "against the regression version of the test class. This means that the test suite " +
+            "generated in the previous response is not able to differentiate between the working " +
+            "and regression versions of the test class. I will provide you the coverage " +
+            "information of the test suite: \n" + coverage +
+            "\nBased on this additional information, please generate a new test suite that " +
+            "achieves a higher branch coverage for the method in question and " +
+            "contains test cases that factor in this extra information such that it passes when " +
+            "ran against the working version and fails when ran against the regression version. " +
+            "In the new test suite, you do not have to provide any package statement or import " +
+            "statements related to the test class. Moreover, in the test code, you do not need " +
+            "to use the fully qualified name of the test class, you can just use the base name " +
+            "of the class as provided the regression version. However, for all other " +
+            "dependencies, please include all necessary import statements required for the " +
+            "test suite to compile";
+  }
+
+  public static String getNoTestsFailedInRegressionPrompt2(String coverage) {
     return "In the JUnit test suite generated in the previous response, 0 tests failed when ran " +
             "against the regression version of the test class. This means that the test suite " +
             "generated in the previous response is not able to differentiate between the working " +
@@ -57,8 +83,11 @@ public class PromptGenerator {
             "contains test cases that factor in this extra information such that it passes when " +
             "ran against the working version and fails when ran against the regression version. " +
             "In the new test suite, you do not have to provide any package statement or import " +
-            "statements related to the test class. However, for all other dependencies, " +
-            "please include all necessary import statements required for the test suite to compile";
+            "statements related to the test class. Moreover, in the test code, you do not need " +
+            "to use the fully qualified name of the test class, you can just use the base name " +
+            "of the class as provided the regression version. However, for all other " +
+            "dependencies, please include all necessary import statements required for the " +
+            "test suite to compile";
   }
 
   private static String getSuspiciousLinesPrompt() {

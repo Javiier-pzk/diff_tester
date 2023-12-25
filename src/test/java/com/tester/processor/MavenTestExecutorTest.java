@@ -7,7 +7,7 @@ class MavenTestExecutorTest {
 
   @Test
   public void executeTest() {
-    String fullyQualifiedTestClassName = "examples.working.LabelTest";
+    String fullyQualifiedTestClassName = "examples.working.RegressionExampleTest";
     try {
       MavenTestExecutionSummary summary = MavenTestExecutor.execute(fullyQualifiedTestClassName);
       System.out.println("class name: " + summary.getClassName());

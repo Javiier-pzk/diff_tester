@@ -11,4 +11,12 @@ class DifferentialTesterTest {
     DifferentialTester dt = new DifferentialTester("Label.java", "LabelTest.java", "apply");
     dt.run();
   }
+
+  @Test
+  void runRegressionExampleTest() {
+    DifferentialTester dt = new DifferentialTester(
+            "RegressionExample.java", "RegressionExampleTest.java",
+            "example123");
+    dt.run();
+  }
 }

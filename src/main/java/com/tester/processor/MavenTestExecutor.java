@@ -24,7 +24,6 @@ public class MavenTestExecutor {
   private static final String MVN_INFO_TAG = "[INFO]";
   private static final String TESTS_RUN = "Tests run";
   private static final String RUNNING = "Running";
-  private static final String FAILURES = "Failures";
 
   public static MavenTestExecutionSummary execute(
           String fullyQualifiedClassName) throws MavenInvocationException {
@@ -85,7 +84,9 @@ public class MavenTestExecutor {
         continue;
       }
       if (line.contains(MVN_ERROR_TAG)) {
-        if (line.contains(FAILURES)) {
+        String[] testClassNames = testClassName.split("\\.");
+        String baseName = testClassNames[testClassNames.length - 1];
+        if (!line.contains(baseName)) {
           continue;
         }
         String names = line.split(" ")[3];
@@ -106,14 +107,19 @@ public class MavenTestExecutor {
     while (!output.isEmpty()) {
       String line = output.pollFirst();
       if (line.isEmpty()) {
-        stackTraces.add(currStackTrace);
-        currStackTrace = new ArrayList<>();
         continue;
       }
       if (line.contains(MVN_ERROR_TAG)) {
+        if (!currStackTrace.isEmpty()) {
+          stackTraces.add(currStackTrace);
+          currStackTrace = new ArrayList<>();
+        }
         continue;
       }
       if (line.contains(MVN_INFO_TAG)) {
+        if (!currStackTrace.isEmpty()) {
+          stackTraces.add(currStackTrace);
+        }
         break;
       }
       currStackTrace.add(line);

@@ -67,14 +67,16 @@ public class DifferentialTester {
           break;
         }
         logger.info("Failed to detect regression bug. Re-prompting...\n");
-        if (regressionFailed == 0) {
-          String workingCoverage = testProcessor.extractWorkingTestCoverageInfo();
-          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(workingCoverage);
-          continue;
-        }
         List<MavenTestFailure> failures = workingSummary.getFailures();
         String failuresString = testProcessor.extractFailures(failures);
-        prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
+        if (workingPassed == 0 && workingFailed == 0) {
+          prompt = PromptGenerator.getCompileErrorPrompt(failuresString);
+        } else if (workingFailed > 0) {
+          prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
+        } else if (regressionFailed == 0) {
+          String workingCoverage = testProcessor.extractWorkingTestCoverageInfo();
+          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(workingCoverage);
+        }
       } catch (MavenInvocationException e) {
         logger.info("Failed to compile test suite. Re-prompting...\n");
         String exception = testProcessor.extractException(e);

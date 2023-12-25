@@ -6,15 +6,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class GptChoice {
   private final int index;
   private final GptMessage message;
-  private final String finish_reason;
+  private final String finishReason;
+  private final String logProbs;
 
   @JsonCreator
   public GptChoice(@JsonProperty("index") int index,
                    @JsonProperty("message") GptMessage message,
-                   @JsonProperty("finish_reason") String finish_reason) {
+                   @JsonProperty("finish_reason") String finishReason,
+                   @JsonProperty("logprobs") String logProbs) {
     this.index = index;
     this.message = message;
-    this.finish_reason = finish_reason;
+    this.finishReason = finishReason;
+    this.logProbs = logProbs;
   }
 
   @JsonProperty("index")
@@ -29,13 +32,18 @@ public class GptChoice {
 
   @JsonProperty("finish_reason")
   public String getFinishReason() {
-    return finish_reason;
+    return finishReason;
+  }
+
+  @JsonProperty("logprobs")
+  public String getLogProbs() {
+    return logProbs;
   }
 
   @Override
   public String toString() {
     return "{ index: " + index + ", message: " + message +
-            ", finish_reason: '" + finish_reason + "' }";
+            ", logprobs: '" + logProbs + "', finish_reason: '" + finishReason + "' + }";
   }
 
   @Override
@@ -49,6 +57,6 @@ public class GptChoice {
     GptChoice other = (GptChoice) o;
     return other.index == index &&
             other.message.equals(message) &&
-            other.finish_reason.equals(finish_reason);
+            other.finishReason.equals(finishReason);
   }
 }
