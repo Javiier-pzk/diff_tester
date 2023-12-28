@@ -176,7 +176,7 @@ public class TestProcessor {
       sb.append("\n\n");
     }
     sb.append("Here are the suspicious lines in the program not covered by any test in the " +
-            "test suite\n:");
+            "test suite:\n");
     Map<Integer, Boolean> lineCoverageStatus = summary.getLineCoverageStatus();
     StringBuilder susLinesSb = new StringBuilder();
     String filePath = getFilePath(MAIN, type, programFileName);
