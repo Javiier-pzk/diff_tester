@@ -1,8 +1,12 @@
 package com.tester.processor;
 
-import org.jacoco.core.analysis.*;
-
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.analysis.ICounter;
+import org.jacoco.core.analysis.ILine;
 
 public class MavenTestExecutionSummary {
   private final String testClassName;
@@ -59,5 +63,18 @@ public class MavenTestExecutionSummary {
 
   public IClassCoverage getClassCoverage() {
     return classCoverage;
+  }
+
+  public Map<Integer, Boolean> getLineCoverageStatus() {
+    if (classCoverage == null) {
+      return Collections.emptyMap();
+    }
+    Map<Integer, Boolean> res = new HashMap<>();
+    for (int i = classCoverage.getFirstLine(); i <= classCoverage.getLastLine(); i++) {
+      ILine line = classCoverage.getLine(i);
+      boolean isCovered = line.getStatus() != ICounter.NOT_COVERED;
+      res.put(i, isCovered);
+    }
+    return res;
   }
 }

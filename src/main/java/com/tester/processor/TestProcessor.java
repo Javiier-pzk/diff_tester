@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.Map;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -32,17 +32,25 @@ public class TestProcessor {
   private final String programFileName;
   private final String testFileName;
   private final String targetMethod;
+  private final Map<String, List<Integer>> suspiciousLines;
 
-  public TestProcessor(String programFileName, String testFileName, String targetMethod) {
+  public TestProcessor(String programFileName,
+                       String testFileName,
+                       String targetMethod,
+                       Map<String, List<Integer>> suspiciousLines) {
     this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
+    this.suspiciousLines = suspiciousLines;
   }
 
-  public TestProcessor(String programFileName, String testFileName) {
+  public TestProcessor(String programFileName,
+                       String testFileName,
+                       Map<String, List<Integer>> suspiciousLines) {
     this.programFileName = programFileName;
     this.testFileName = testFileName;
     this.targetMethod = "";
+    this.suspiciousLines = suspiciousLines;
   }
 
   public String extractException(Throwable e) {
@@ -65,7 +73,8 @@ public class TestProcessor {
       sb.append(failure.getMethodName());
       sb.append("\n");
       int lineNum = failure.getFailureLineNumber();
-      String programLine = getFailedLine(lineNum);
+      String filePath = getFilePath(TEST, WORKING, testFileName);
+      String programLine = getProgramLine(lineNum, filePath);
       sb.append("Line ");
       sb.append(lineNum);
       sb.append(": ");
@@ -122,7 +131,16 @@ public class TestProcessor {
     return readProgram(getFilePath(MAIN, REGRESSION, programFileName));
   }
 
-  public String extractTestCoverageInfo(MavenTestExecutionSummary summary) {
+
+  public String extractWorkingCoverageInfo(MavenTestExecutionSummary summary) {
+    return extractTestCoverageInfo(summary, WORKING);
+  }
+
+  public String extractRegressionCoverageInfo(MavenTestExecutionSummary summary) {
+    return extractTestCoverageInfo(summary, REGRESSION);
+  }
+
+  private String extractTestCoverageInfo(MavenTestExecutionSummary summary, String type) {
     IClassCoverage cc = summary.getClassCoverage();
     if (cc == null) {
       return "";
@@ -157,6 +175,27 @@ public class TestProcessor {
       sb.append("%");
       sb.append("\n\n");
     }
+    sb.append("Here are the suspicious lines in the program not covered by any test in the " +
+            "test suite\n:");
+    Map<Integer, Boolean> lineCoverageStatus = summary.getLineCoverageStatus();
+    StringBuilder susLinesSb = new StringBuilder();
+    String filePath = getFilePath(MAIN, type, programFileName);
+    for (int l : suspiciousLines.get(type)) {
+      if (lineCoverageStatus.getOrDefault(l, false)) {
+        continue;
+      }
+      String programLine = getProgramLine(l, filePath);
+      susLinesSb.append("Line ");
+      susLinesSb.append(l);
+      susLinesSb.append(": ");
+      susLinesSb.append(programLine);
+      susLinesSb.append("\n");
+    }
+    if (susLinesSb.length() == 0) {
+      sb.append("None");
+    } else {
+      sb.append(susLinesSb);
+    }
     return sb.toString();
   }
 
@@ -179,9 +218,8 @@ public class TestProcessor {
     }
   }
 
-  private String getFailedLine(int lineNum) {
+  private String getProgramLine(int lineNum, String filePath) {
     int currLineNum = 1;
-    String filePath = getFilePath(TEST, WORKING, testFileName);
     try {
       BufferedReader reader = new BufferedReader(new FileReader(filePath));
       String line = reader.readLine();

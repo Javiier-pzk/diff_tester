@@ -1,14 +1,21 @@
 package com.tester.processor;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.junit.jupiter.api.Test;
 
 
 class TestProcessorTest {
 
+  private final Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>() {{
+    put("working", Arrays.asList(25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37));
+    put("regression", Arrays.asList(25, 26, 27, 28, 29));
+  }};
   private final TestProcessor testProcessor = new TestProcessor("Label.java", "LabelTest.java",
-          "apply");
+          "apply", suspiciousLines);
 
   @Test
   void extractTest() {
@@ -62,11 +69,5 @@ class TestProcessorTest {
     } catch (MavenInvocationException e) {
       e.printStackTrace();
     }
-  }
-
-  @Test
-  public void extractCoverageTest() {
-    String coverageInfo = testProcessor.extractWorkingTestCoverageInfo();
-    System.out.println(coverageInfo);
   }
 }

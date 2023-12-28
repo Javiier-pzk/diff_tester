@@ -34,6 +34,7 @@ class MavenTestExecutorTest {
         System.out.println("Method line coverage: " + mc.getLineCounter().getCoveredRatio() * 100 + "%");
         System.out.println("Method branch coverage: " + mc.getBranchCounter().getCoveredRatio() * 100 + "%");
       }
+      System.out.println(summary.getLineCoverageStatus());
     } catch (MavenInvocationException e) {
       e.printStackTrace();
     }

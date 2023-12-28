@@ -1,6 +1,6 @@
 package com.tester;
 
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.tester.gpt.Gpt;
@@ -19,20 +19,25 @@ public class DifferentialTester {
   private final Logger logger;
   private final TestProcessor testProcessor;
 
-  public DifferentialTester(String programFileName, String testFileName, String targetMethod) {
+  public DifferentialTester(String programFileName,
+                            String testFileName,
+                            String targetMethod,
+                            Map<String, List<Integer>> suspiciousLines) {
     this.testFileName = testFileName;
     this.targetMethod = targetMethod;
     gpt = new Gpt();
-    testProcessor = new TestProcessor(programFileName, testFileName, targetMethod);
+    testProcessor = new TestProcessor(programFileName, testFileName, targetMethod, suspiciousLines);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
 
-  public DifferentialTester(String programFileName, String testFileName) {
+  public DifferentialTester(String programFileName,
+                            String testFileName,
+                            Map<String, List<Integer>> suspiciousLines) {
     this.testFileName = testFileName;
     this.targetMethod = "";
     gpt = new Gpt();
-    testProcessor = new TestProcessor(programFileName, testFileName);
+    testProcessor = new TestProcessor(programFileName, testFileName, suspiciousLines);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
@@ -74,7 +79,7 @@ public class DifferentialTester {
         } else if (workingFailed > 0) {
           prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
         } else if (regressionFailed == 0) {
-          String coverageString = testProcessor.extractTestCoverageInfo(workingSummary);
+          String coverageString = testProcessor.extractWorkingCoverageInfo(workingSummary);
           prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(coverageString);
         }
       } catch (MavenInvocationException e) {
