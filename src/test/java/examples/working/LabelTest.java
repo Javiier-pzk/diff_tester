@@ -1,29 +1,50 @@
 package examples.working;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-class LabelTest {
+public class LabelTest {
 
-  @Test
-  void testApply() {
-    String[] includes = {"label1", "label2"};
-    String[] excludes = {"label3", "label4"};
+    private String[] includes;
+    private String[] excludes;
 
-    Label label = new Label(includes, excludes);
+    @BeforeEach
+    void setUp() {
+        includes = new String[]{"a", "b", "c"};
+        excludes = new String[]{"x", "y", "z"};
+    }
 
-    assertTrue(label.apply("label1"), "Should return true for included label.");
-    assertFalse(label.apply("label4"), "Should return false for excluded label.");
-    assertFalse(label.apply("label5"), "Should return false for labels not included.");
+    @Test
+    public void testApplyExclusion() {
+        Label l = new Label(includes, excludes);
+        assertFalse(l.apply("x"));
+    }
 
-    excludes = null;
-    Label labelWithNullExcludes = new Label(includes, excludes);
-    assertTrue(labelWithNullExcludes.apply("label1"), "Should return true for included label with null excludes. ");
-    assertFalse(labelWithNullExcludes.apply("label4"), "Should return false for previously excluded label when excludes is null.");
+    @Test
+    public void testApplyInclusion() {
+        Label l = new Label(includes, excludes);
+        assertTrue(l.apply("a"));
+    }
 
-    includes = null;
-    Label labelWithNullIncludes = new Label(includes, excludes);
-    assertTrue(labelWithNullIncludes.apply("label3"), "Should return true for any label with null includes and excludes.");
-  }
+    @Test
+    public void testApplyNotIncluded() {
+        Label l = new Label(includes, excludes);
+        assertFalse(l.apply("d"));
+    }
+
+    @Test
+    public void testIncludeNullExcludeHasValue() {
+        Label l = new Label(null, excludes);
+        assertFalse(l.apply("x"));
+        assertTrue(l.apply("a"));
+    }
+
+    @Test
+    public void testIncludeHasValueExcludeNull() {
+        Label l = new Label(includes, null);
+        assertTrue(l.apply("a"));
+        assertFalse(l.apply("x"));
+    }
 }
