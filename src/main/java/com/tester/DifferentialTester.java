@@ -74,8 +74,8 @@ public class DifferentialTester {
         } else if (workingFailed > 0) {
           prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
         } else if (regressionFailed == 0) {
-          String workingCoverage = testProcessor.extractWorkingTestCoverageInfo();
-          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(workingCoverage);
+          String coverageString = testProcessor.extractTestCoverageInfo(workingSummary);
+          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(coverageString);
         }
       } catch (MavenInvocationException e) {
         logger.info("Failed to compile test suite. Re-prompting...\n");

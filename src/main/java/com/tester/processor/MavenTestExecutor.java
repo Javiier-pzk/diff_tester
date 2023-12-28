@@ -1,11 +1,8 @@
 package com.tester.processor;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
+
 import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
@@ -13,6 +10,11 @@ import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
+import org.jacoco.agent.rt.RT;
+import org.jacoco.core.analysis.Analyzer;
+import org.jacoco.core.analysis.CoverageBuilder;
+import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.tools.ExecFileLoader;
 
 public class MavenTestExecutor {
 
@@ -24,9 +26,10 @@ public class MavenTestExecutor {
   private static final String MVN_INFO_TAG = "[INFO]";
   private static final String TESTS_RUN = "Tests run";
   private static final String RUNNING = "Running";
+  private static final String JACOCO_EXEC_FILE_PATH = "target/jacoco.exec";
 
   public static MavenTestExecutionSummary execute(
-          String fullyQualifiedClassName) throws MavenInvocationException {
+          String fullyQualifiedClassName, String classPath) throws MavenInvocationException {
     InvocationRequest request = new DefaultInvocationRequest();
     LinkedList<String> output = new LinkedList<>();
     request.setOutputHandler(output::add);
@@ -39,11 +42,12 @@ public class MavenTestExecutor {
     invoker.setMavenHome(new File(MVN_PATH));
     InvocationResult result = invoker.execute(request);
     boolean isSuccess = result.getExitCode() == 0;
-    return getSummary(output, isSuccess);
+    IClassCoverage cc = getTestCoverageInfo(classPath);
+    return getSummary(output, isSuccess, cc);
   }
 
   private static MavenTestExecutionSummary getSummary(LinkedList<String> output,
-                                                      boolean isSuccess) {
+                                                      boolean isSuccess, IClassCoverage cc) {
     String testClassName = "";
     int totalTests = -1, failureCount = -1, errorCount = -1, skippedCount = -1;
     List<MavenTestFailure> failures = Collections.emptyList();
@@ -67,7 +71,7 @@ public class MavenTestExecutor {
       }
     }
     return new MavenTestExecutionSummary(
-            testClassName, totalTests, failureCount, errorCount, skippedCount, failures);
+            testClassName, totalTests, failureCount, errorCount, skippedCount, failures, cc);
   }
 
   private static List<MavenTestFailure> extractFailures(LinkedList<String> output,
@@ -125,5 +129,20 @@ public class MavenTestExecutor {
       currStackTrace.add(line);
     }
     return stackTraces;
+  }
+
+  private static IClassCoverage getTestCoverageInfo(String classPath) {
+    try {
+      RT.getAgent().dump(true);
+      ExecFileLoader loader = new ExecFileLoader();
+      loader.load(new File(JACOCO_EXEC_FILE_PATH));
+      CoverageBuilder coverageBuilder = new CoverageBuilder();
+      Analyzer analyzer = new Analyzer(loader.getExecutionDataStore(), coverageBuilder);
+      analyzer.analyzeAll(new File(classPath));
+      return coverageBuilder.getClasses().iterator().next();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }

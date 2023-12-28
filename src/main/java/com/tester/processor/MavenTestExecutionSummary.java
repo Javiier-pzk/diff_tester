@@ -1,5 +1,7 @@
 package com.tester.processor;
 
+import org.jacoco.core.analysis.*;
+
 import java.util.List;
 
 public class MavenTestExecutionSummary {
@@ -9,19 +11,22 @@ public class MavenTestExecutionSummary {
   private final int testsAbortedCount;
   private final int testsSkippedCount;
   private final List<MavenTestFailure> failures;
+  private final IClassCoverage classCoverage;
 
   public MavenTestExecutionSummary(String testClassName,
                                    int totalTestsCount,
                                    int testsFailedCount,
                                    int testsAbortedCount,
                                    int testsSkippedCount,
-                                   List<MavenTestFailure> failures) {
+                                   List<MavenTestFailure> failures,
+                                   IClassCoverage classCoverage) {
     this.testClassName = testClassName;
     this.totalTestsCount = totalTestsCount;
     this.testsFailedCount = testsFailedCount;
     this.testsAbortedCount = testsAbortedCount;
     this.testsSkippedCount = testsSkippedCount;
     this.failures = failures;
+    this.classCoverage = classCoverage;
   }
 
   public String getClassName() {
@@ -50,5 +55,9 @@ public class MavenTestExecutionSummary {
 
   public List<MavenTestFailure> getFailures() {
     return failures;
+  }
+
+  public IClassCoverage getClassCoverage() {
+    return classCoverage;
   }
 }

@@ -1,7 +1,6 @@
 package com.tester.processor;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,13 +10,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.List;
+
 import org.apache.maven.shared.invoker.MavenInvocationException;
-import org.jacoco.agent.rt.RT;
-import org.jacoco.core.analysis.Analyzer;
-import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.IMethodCoverage;
-import org.jacoco.core.tools.ExecFileLoader;
 
 
 public class TestProcessor {
@@ -33,7 +29,6 @@ public class TestProcessor {
   private static final String CLASS = ".class";
   private static final String EXAMPLES = "examples";
   private static final String TARGET_DIR = "target/classes/";
-  private static final String JACOCO_EXEC_FILE_PATH = "target/jacoco.exec";
   private final String programFileName;
   private final String testFileName;
   private final String targetMethod;
@@ -110,11 +105,13 @@ public class TestProcessor {
   }
 
   public MavenTestExecutionSummary runWorkingTest() throws MavenInvocationException {
-    return MavenTestExecutor.execute(getQualifiedClassName(WORKING));
+    return MavenTestExecutor.execute(
+            getQualifiedClassName(WORKING), getClassPath(WORKING, programFileName));
   }
 
   public MavenTestExecutionSummary runRegressionTest() throws MavenInvocationException {
-    return MavenTestExecutor.execute(getQualifiedClassName(REGRESSION));
+    return MavenTestExecutor.execute(
+            getQualifiedClassName(REGRESSION), getClassPath(REGRESSION, programFileName));
   }
 
   public String readWorkingProgram() {
@@ -125,12 +122,42 @@ public class TestProcessor {
     return readProgram(getFilePath(MAIN, REGRESSION, programFileName));
   }
 
-  public String extractWorkingTestCoverageInfo() {
-    return extractTestCoverageInfo(WORKING);
-  }
-
-  public String extractRegressionTestCoverageInfo() {
-    return extractTestCoverageInfo(REGRESSION);
+  public String extractTestCoverageInfo(MavenTestExecutionSummary summary) {
+    IClassCoverage cc = summary.getClassCoverage();
+    if (cc == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append("Class name: ");
+    sb.append(cc.getName());
+    sb.append("\n");
+    sb.append("Line coverage: ");
+    sb.append(cc.getLineCounter().getCoveredRatio() * 100);
+    sb.append("%");
+    sb.append("\n");
+    sb.append("Method coverage: ");
+    sb.append(cc.getMethodCounter().getCoveredRatio() * 100);
+    sb.append("%");
+    sb.append("\n\n");
+    Collection<IMethodCoverage> methods = cc.getMethods();
+    for (IMethodCoverage method : methods) {
+      if (targetMethod != null && !targetMethod.equals(method.getName())) {
+        continue;
+      }
+      sb.append("Method: ");
+      sb.append(method.getName());
+      sb.append(method.getDesc());
+      sb.append("\n");
+      sb.append("Line coverage: ");
+      sb.append(method.getLineCounter().getCoveredRatio() * 100);
+      sb.append("%");
+      sb.append("\n");
+      sb.append("Branch coverage: ");
+      sb.append(method.getBranchCounter().getCoveredRatio() * 100);
+      sb.append("%");
+      sb.append("\n\n");
+    }
+    return sb.toString();
   }
 
   private void writeToFile(String type, String code) {
@@ -163,53 +190,6 @@ public class TestProcessor {
         currLineNum++;
       }
       return line;
-    } catch (IOException e) {
-      e.printStackTrace();
-      return "";
-    }
-  }
-
-  private String extractTestCoverageInfo(String type) {
-    try {
-      RT.getAgent().dump(true);
-      ExecFileLoader loader = new ExecFileLoader();
-      loader.load(new File(JACOCO_EXEC_FILE_PATH));
-      CoverageBuilder coverageBuilder = new CoverageBuilder();
-      Analyzer analyzer = new Analyzer(loader.getExecutionDataStore(), coverageBuilder);
-      analyzer.analyzeAll(new File(getClassPath(type, programFileName)));
-      StringBuilder sb = new StringBuilder();
-      for (final IClassCoverage cc : coverageBuilder.getClasses()) {
-        sb.append("Class name: ");
-        sb.append(cc.getName());
-        sb.append("\n");
-        sb.append("Line coverage: ");
-        sb.append(cc.getLineCounter().getCoveredRatio() * 100);
-        sb.append("%");
-        sb.append("\n");
-        sb.append("Method coverage: ");
-        sb.append(cc.getMethodCounter().getCoveredRatio() * 100);
-        sb.append("%");
-        sb.append("\n\n");
-        Collection<IMethodCoverage> methods = cc.getMethods();
-        for (IMethodCoverage method : methods) {
-          if (targetMethod != null && !targetMethod.equals(method.getName())) {
-            continue;
-          }
-          sb.append("Method: ");
-          sb.append(method.getName());
-          sb.append(method.getDesc());
-          sb.append("\n");
-          sb.append("Line coverage: ");
-          sb.append(method.getLineCounter().getCoveredRatio() * 100);
-          sb.append("%");
-          sb.append("\n");
-          sb.append("Branch coverage: ");
-          sb.append(method.getBranchCounter().getCoveredRatio() * 100);
-          sb.append("%");
-          sb.append("\n\n");
-        }
-      }
-      return sb.toString();
     } catch (IOException e) {
       e.printStackTrace();
       return "";
