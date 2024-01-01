@@ -61,7 +61,7 @@ public class PromptGenerator {
             "and regression versions of the test class. I will provide you the coverage " +
             "information of the test suite as well as any suspicious lines of the program that " +
             "the test suite did not cover: \n" + coverage +
-            "\nBased on this additional information, please generate a new test suite that " +
+            "\n\nBased on this additional information, please generate a new test suite that " +
             "covers all uncovered suspicious lines in the program (if any) for the method in " +
             "question by increasing the line or branch coverage (whichever applicable). All " +
             "tests in the new test suite should also pass when run against the working version " +
