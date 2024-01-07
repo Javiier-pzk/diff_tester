@@ -8,13 +8,13 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.junit.jupiter.api.Test;
 
 
-class TestProcessorTest {
+class TestTestProcessorBaseTest {
 
   private final Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>() {{
     put("working", Arrays.asList(25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37));
     put("regression", Arrays.asList(25, 26, 27, 28, 29));
   }};
-  private final TestProcessor testProcessor = new TestProcessor("Label.java", "LabelTest.java",
+  private final BaseProcessor baseProcessor = new TestProcessor("Label.java", "LabelTest.java",
           "apply", suspiciousLines);
 
   @Test
@@ -50,21 +50,21 @@ class TestProcessorTest {
             "\n" +
             "So this test case will pass for the correctly functioning `Label` class, and fail " +
             "for the buggy version.";
-    testProcessor.extractTest(response);
+    baseProcessor.extractTest(response);
   }
 
   @Test
   public void readProgramTest() {
-    String program = testProcessor.readWorkingProgram();
+    String program = baseProcessor.readWorkingProgram();
     System.out.println(program);
   }
 
   @Test
   public void extractFailuresTest() {
     try {
-      MavenTestExecutionSummary workingSummary = testProcessor.runWorkingTest();
+      MavenTestExecutionSummary workingSummary = baseProcessor.runWorkingTest();
       List<MavenTestFailure> failures = workingSummary.getFailures();
-      String result = testProcessor.extractFailures(failures);
+      String result = baseProcessor.extractFailures(failures);
       System.out.println(result);
     } catch (MavenInvocationException e) {
       e.printStackTrace();
