@@ -33,7 +33,6 @@ public abstract class BaseProcessor {
   private final String testFileName;
   private final String targetMethod;
   private final Map<String, List<Integer>> suspiciousLines;
-  private String baseDir;
 
   public BaseProcessor(String programFileName,
                        String testFileName,
@@ -45,6 +44,10 @@ public abstract class BaseProcessor {
     this.suspiciousLines = suspiciousLines;
   }
 
+  public static String getMAIN() {
+    return MAIN;
+  }
+
   public BaseProcessor(String programFileName,
                        String testFileName,
                        Map<String, List<Integer>> suspiciousLines) {
@@ -52,14 +55,6 @@ public abstract class BaseProcessor {
     this.testFileName = testFileName;
     this.targetMethod = "";
     this.suspiciousLines = suspiciousLines;
-  }
-
-  public static String getCodeStart() {
-    return CODE_START;
-  }
-
-  public static String getCodeEnd() {
-    return CODE_END;
   }
 
   public static String getREGRESSION() {
@@ -78,14 +73,6 @@ public abstract class BaseProcessor {
     return PACKAGE;
   }
 
-  public static String getMAIN() {
-    return MAIN;
-  }
-
-  public static String getTEST() {
-    return TEST;
-  }
-
   public static String getCLASS() {
     return CLASS;
   }
@@ -98,28 +85,8 @@ public abstract class BaseProcessor {
     return TARGET_DIR;
   }
 
-  public String getProgramFileName() {
-    return programFileName;
-  }
-
   public String getTestFileName() {
     return testFileName;
-  }
-
-  public String getTargetMethod() {
-    return targetMethod;
-  }
-
-  public Map<String, List<Integer>> getSuspiciousLines() {
-    return suspiciousLines;
-  }
-
-  public String getBaseDir() {
-    return baseDir;
-  }
-
-  public void setBaseDir(String baseDir) {
-    this.baseDir = baseDir;
   }
 
   public String extractException(Throwable e) {

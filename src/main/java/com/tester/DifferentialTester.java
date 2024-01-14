@@ -31,23 +31,23 @@ public class DifferentialTester {
 
   public DifferentialTester(String programFileName,
                             String testFileName,
-                            String targetMethod,
-                            Map<String, List<Integer>> suspiciousLines, String baseDir) {
+                            Map<String, List<Integer>> suspiciousLines) {
     this.testFileName = testFileName;
-    this.targetMethod = targetMethod;
+    this.targetMethod = "";
     gpt = new Gpt();
-    baseProcessor = new MinerProcessor(programFileName, testFileName, targetMethod, suspiciousLines, baseDir);
+    baseProcessor = new TestProcessor(programFileName, testFileName, suspiciousLines);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }
 
   public DifferentialTester(String programFileName,
                             String testFileName,
-                            Map<String, List<Integer>> suspiciousLines) {
+                            String targetMethod,
+                            Map<String, List<Integer>> suspiciousLines, MinerProcessor.MinerInfo minerInfo) {
     this.testFileName = testFileName;
-    this.targetMethod = "";
+    this.targetMethod = targetMethod;
     gpt = new Gpt();
-    baseProcessor = new TestProcessor(programFileName, testFileName, suspiciousLines);
+    baseProcessor = new MinerProcessor(programFileName, testFileName, targetMethod, suspiciousLines, minerInfo);
     logger = Logger.getLogger(DifferentialTester.class.getName());
     logger.setLevel(Level.INFO);
   }

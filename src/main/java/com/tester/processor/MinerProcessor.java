@@ -3,11 +3,37 @@ package com.tester.processor;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Song Rui
+ */
 public class MinerProcessor extends BaseProcessor{
 
-    public MinerProcessor(String programFileName, String testFileName, String targetMethod, Map<String, List<Integer>> suspiciousLines, String baseDir) {
+    /**
+     * specified input and output info from RegMiner++
+     */
+    public static class MinerInfo {
+        String baseDir;
+        String workingCommit;
+        String regressionCommit;
+        String workingFilePath;
+        String regressionFilePath;
+        String outputPath;
+
+        public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath) {
+            this.baseDir = baseDir;
+            this.workingCommit = workingCommit;
+            this.regressionCommit = regressionCommit;
+            this.workingFilePath = workingFilePath;
+            this.regressionFilePath = regressionFilePath;
+            this.outputPath = outputPath;
+        }
+    }
+
+    MinerInfo minerInfo;
+
+    public MinerProcessor(String programFileName, String testFileName, String targetMethod, Map<String, List<Integer>> suspiciousLines, MinerInfo minerInfo) {
         super(programFileName, testFileName, targetMethod, suspiciousLines);
-        super.setBaseDir(baseDir);
+        this.minerInfo = minerInfo;
     }
 
     @Override
@@ -34,4 +60,5 @@ public class MinerProcessor extends BaseProcessor{
     String getPackageName(String type) {
         return null;
     }
+
 }

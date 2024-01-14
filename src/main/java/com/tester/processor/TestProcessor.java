@@ -41,4 +41,5 @@ public class TestProcessor extends BaseProcessor {
     String getPackageName(String type) {
         return BaseProcessor.getPACKAGE() + BaseProcessor.getEXAMPLES() + "." + type + ";\n\n";
     }
+
 }
