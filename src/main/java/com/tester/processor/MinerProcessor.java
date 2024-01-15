@@ -18,14 +18,16 @@ public class MinerProcessor extends BaseProcessor{
         String workingFilePath;
         String regressionFilePath;
         String outputPath;
+        String packageName;
 
-        public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath) {
+        public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath, String packageName) {
             this.baseDir = baseDir;
             this.workingCommit = workingCommit;
             this.regressionCommit = regressionCommit;
             this.workingFilePath = workingFilePath;
             this.regressionFilePath = regressionFilePath;
             this.outputPath = outputPath;
+            this.packageName = packageName;
         }
     }
 
@@ -43,22 +45,32 @@ public class MinerProcessor extends BaseProcessor{
 
     @Override
     String getFilePath(String dir, String type, String fileName) {
-        return null;
+        if (BaseProcessor.getWORKING().equals(type)) {
+            return minerInfo.workingFilePath;
+        } else {
+            return minerInfo.regressionFilePath;
+        }
     }
 
     @Override
     String getClassPath(String type, String fileName) {
-        return null;
+        String baseName;
+        if (BaseProcessor.getWORKING().equals(type)) {
+            baseName = minerInfo.workingFilePath;
+        } else {
+            baseName = minerInfo.regressionFilePath;
+        }
+        return getBaseName(baseName).replace(BaseProcessor.getSRC()+BaseProcessor.getMAIN(), BaseProcessor.getTargetDir()) + BaseProcessor.getCLASS();
     }
 
     @Override
     String getQualifiedClassName(String type) {
-        return null;
+        return getBaseName(super.getTestFileName());
     }
 
     @Override
     String getPackageName(String type) {
-        return null;
+        return BaseProcessor.getPACKAGE() + minerInfo.packageName + ";\n\n";
     }
 
 }

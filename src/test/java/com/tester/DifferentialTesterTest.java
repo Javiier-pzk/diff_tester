@@ -45,7 +45,7 @@ class DifferentialTesterTest {
     DifferentialTester dt = new DifferentialTester(
             "RegressionExample.java", "RegressionExampleTest.java",
             "example123", suspiciousLines, new MinerProcessor.MinerInfo(
-                    "","","","","",""
+                    "","","","","","", "test"
     ));
     dt.run();
   }

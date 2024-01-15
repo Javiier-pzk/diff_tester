@@ -44,8 +44,8 @@ public class DifferentialTester {
                             String testFileName,
                             String targetMethod,
                             Map<String, List<Integer>> suspiciousLines, MinerProcessor.MinerInfo minerInfo) {
-    this.testFileName = testFileName;
     this.targetMethod = targetMethod;
+    this.testFileName = testFileName;
     gpt = new Gpt();
     baseProcessor = new MinerProcessor(programFileName, testFileName, targetMethod, suspiciousLines, minerInfo);
     logger = Logger.getLogger(DifferentialTester.class.getName());
