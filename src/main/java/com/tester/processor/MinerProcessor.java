@@ -1,5 +1,12 @@
 package com.tester.processor;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +47,20 @@ public class MinerProcessor extends BaseProcessor{
 
     @Override
     protected void writeTest2File(String code) {
-
+        byte[] codeBytes = code.getBytes();
+        byte[] packageNameBytes = minerInfo.packageName.getBytes();
+        try {
+            if (Files.exists(Paths.get(minerInfo.outputPath))) {
+                Files.delete(Paths.get(minerInfo.outputPath));
+            }
+            FileChannel channel = FileChannel.open(Paths.get(minerInfo.outputPath), StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
+            channel.write(ByteBuffer.wrap(packageNameBytes));
+            channel.write(ByteBuffer.wrap(codeBytes));
+            channel.force(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -50,6 +70,32 @@ public class MinerProcessor extends BaseProcessor{
         } else {
             return minerInfo.regressionFilePath;
         }
+    }
+
+    @Override
+    public String extractFailures(List<MavenTestFailure> failures) {
+        StringBuilder sb = new StringBuilder();
+        for (MavenTestFailure failure : failures) {
+            sb.append("Method: ");
+            sb.append(failure.getMethodName());
+            sb.append("\n");
+            int lineNum = failure.getFailureLineNumber();
+            String filePath = minerInfo.outputPath;
+            String programLine = getProgramLine(lineNum, filePath);
+            sb.append("Line ");
+            sb.append(lineNum);
+            sb.append(": ");
+            sb.append(programLine);
+            sb.append("\n");
+            List<String> stackTrace = failure.getStackTrace();
+            int limit = Math.min(stackTrace.size(), 10);
+            sb.append("Exception:\n");
+            for (int i = 0; i < limit; i++) {
+                sb.append(stackTrace.get(i));
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     @Override

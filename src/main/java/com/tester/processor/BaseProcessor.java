@@ -253,7 +253,7 @@ public abstract class BaseProcessor {
     }
   }
 
-  private String getProgramLine(int lineNum, String filePath) {
+  String getProgramLine(int lineNum, String filePath) {
     int currLineNum = 1;
     try {
       BufferedReader reader = new BufferedReader(new FileReader(filePath));
