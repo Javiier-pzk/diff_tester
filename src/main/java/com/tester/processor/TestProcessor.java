@@ -8,9 +8,12 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.*;
+
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -51,6 +54,18 @@ public class TestProcessor {
     this.testFileName = testFileName;
     this.targetMethod = "";
     this.suspiciousLines = suspiciousLines;
+  }
+
+  public List<String> extractSubtasks(String input) {
+    String regex = "(?m)^\\d+\\.\\s+(.*)$";
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(input);
+
+    List<String> extractedItems = new ArrayList<>();
+    while (matcher.find()) {
+      extractedItems.add(matcher.group(1).trim());
+    }
+    return extractedItems;
   }
 
   public String extractException(Throwable e) {
@@ -244,7 +259,7 @@ public class TestProcessor {
     }
   }
 
-  private String getBaseName(String fileName) {
+  public String getBaseName(String fileName) {
     int dotIndex = fileName.lastIndexOf('.');
     return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
   }

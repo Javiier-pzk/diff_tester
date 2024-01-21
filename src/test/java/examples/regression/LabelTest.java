@@ -1,28 +1,35 @@
 package examples.regression;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 class LabelTest {
-    private Label labelWithIncludes;
-    private Label labelWithExcludes;
 
-    @BeforeEach
-    void setUp() {
-        String[] includes = {"include1", "include2"};
-        String[] excludes = {"exclude1", "exclude2"};
-        labelWithIncludes = new Label(includes, null);
-        labelWithExcludes = new Label(null, excludes);
+    @Test
+    void bothNull() {
+        Label label = new Label(null, null);
+        assertTrue(label.apply("label"));
     }
 
     @Test
-    void testLabelNotInIncludes() {
-        assertFalse(labelWithIncludes.apply("not-in-includes"));
+    void includesNonNullExcludesNull() {
+        Label label = new Label(new String[]{"A", "B"}, null);
+        assertTrue(label.apply("A"));
+        assertFalse(label.apply("C"));
     }
 
     @Test
-    void testLabelNotInExcludes() {
-        assertTrue(labelWithExcludes.apply("not-in-excludes"));
+    void excludesNonNullIncludesNull() {
+        Label label = new Label(null, new String[]{"X", "Y"});
+        assertTrue(label.apply("A"));
+        assertFalse(label.apply("X"));
+    }
+
+    @Test
+    void bothNonNull() {
+        Label label = new Label(new String[]{"A", "B"}, new String[]{"X", "Y"});
+        assertTrue(label.apply("A"));
+        assertFalse(label.apply("X"));
+        assertFalse(label.apply("Z"));
     }
 }

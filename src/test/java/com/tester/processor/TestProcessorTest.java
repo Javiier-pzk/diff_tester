@@ -70,4 +70,33 @@ class TestProcessorTest {
       e.printStackTrace();
     }
   }
+
+  @Test
+  public void extractSubtasksTest() {
+    String response = "\"Subtasks to generate JUnit5 tests that can differentiate both versions " +
+            "include:\n\n1. Understand the functionality of both methods: " +
+            "Understanding how the correct method is supposed to work is vital. " +
+            "Examining the broken method and identifying the problem helps in creating effective " +
+            "unit tests. It appears that the problem with the buggy version is how it processes a " +
+            "label that should be excluded.\n\n2. Prepare a test plan: A test plan should " +
+            "include scenarios that cover all possible code paths (i.e., includes, excludes, or " +
+            "both are null, label is in includes, label is in excludes etc.)\n\n3. Setup JUnit" +
+            " test environment: To run JUnit tests, you'll need to have JUnit5 libraries in " +
+            "your classpath. Most modern IDEs support JUnit and you simply need to include JUnit5" +
+            " library in your project structure.\n\n4. Create a JUnit5 test " +
+            "class: This class will contain the tests specific to the \"Label\" class" +
+            ".\n\n5. Create the test methods: Each test method will represent a single test " +
+            "case based on the test plan. Each method will call the \"apply\" method of the " +
+            "Label class with different parameters and then check the return value using the " +
+            "JUnit assert methods.\n\n6. Run the tests on the working version: " +
+            "It will ensure that all our test cases are working fine.\n\n7. Run the tests on" +
+            " the regression version: Some test cases should fail due to the code issue in " +
+            "this version of \"apply\" method.\n\n8. Refactor tests if necessary: If " +
+            "there's a test that isn't providing the desired results, it might need to " +
+            "be tweaked or replaced with a new, more appropriate test.\"";
+    List<String> res = testProcessor.extractSubtasks(response);
+    for (String s : res) {
+      System.out.println(s);
+    }
+  }
 }
