@@ -1,21 +1,39 @@
 package examples.working;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RegressionExampleTest {
+public class RegressionExampleTest {
+
+    private RegressionExample regressionExample;
+
+    @BeforeEach
+    public void setUp() {
+        regressionExample = new RegressionExample();
+    }
+
+    @Test
+    public void testExample123ForNegativeInput() {
+        int result = regressionExample.example123(-100000002);
+        assertEquals(-100000001, result);
+    }
+
+    @Test
+    public void testExample123ForNonNegativeInput() {
+        int result = regressionExample.example123(0);
+        assertEquals(2, result);
+    }
+
+    @Test
+    public void testExample123ForExtremePositiveInput() {
+        int result = regressionExample.example123(Integer.MAX_VALUE);
+        assertEquals(Integer.MIN_VALUE, result);
+    }
     
     @Test
-    void testExample123() {
-        RegressionExample example = new RegressionExample();
-         
-        int a = -100000001;
-        assertEquals(a + 1, example.example123(a));
-         
-        int b = -100000000;
-        assertEquals(b + 2, example.example123(b));
-         
-        int c = 0;
-        assertEquals(c + 2, example.example123(c));
+    public void testExample123ForBoundaryInput() {
+        int result = regressionExample.example123(-100000001);
+        assertEquals(-100000000, result);  // This assertion should fail for the regression version
     }
 }

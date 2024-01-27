@@ -89,6 +89,12 @@ public class LLMAgent {
       String implementation = gpt.getLastMessage();
       testProcessor.extractTest(implementation);
       logger.info("Implementation: " + implementation);
+      String fileExtension = testProcessor.getExtension(testFileName);
+      if (!fileExtension.equals(".java")) {
+        logger.info("Successfully generated test. " +
+                "View the generated test in " + testFileName);
+        break;
+      }
       try {
         MavenTestExecutionSummary workingSummary = testProcessor.runWorkingTest();
         MavenTestExecutionSummary regressionSummary = testProcessor.runRegressionTest();

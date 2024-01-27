@@ -264,6 +264,11 @@ public class TestProcessor {
     return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
   }
 
+  public String getExtension(String fileName) {
+    int dotIndex = fileName.lastIndexOf('.');
+    return (dotIndex == -1) ? "" : fileName.substring(dotIndex);
+  }
+
   private String getFilePath(String dir, String type, String fileName) {
     return SRC + dir + EXAMPLES + "/" + type + "/" + fileName;
   }

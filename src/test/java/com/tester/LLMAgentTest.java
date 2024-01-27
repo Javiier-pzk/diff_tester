@@ -28,4 +28,28 @@ class LLMAgentTest {
             "example123", suspiciousLines);
     agent.run();
   }
+
+  @Test
+  void runStackTest() {
+    Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>() {{
+      put("working", Collections.singletonList(19));
+      put("regression", Collections.singletonList(19));
+    }};
+    LLMAgent agent = new LLMAgent(
+            "StackT.java", "StackTTest.java",
+            "pop", suspiciousLines);
+    agent.run();
+  }
+
+  @Test
+  void runLinkedListTest() {
+    Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>() {{
+      put("working", Collections.singletonList(16));
+      put("regression", Collections.singletonList(12));
+    }};
+    LLMAgent agent = new LLMAgent(
+            "LinkedList.java", "LinkedListTest.java",
+            "get", suspiciousLines);
+    agent.run();
+  }
 }
