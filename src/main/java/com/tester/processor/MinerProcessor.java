@@ -29,7 +29,7 @@ public class MinerProcessor extends BaseProcessor{
         String workingContent;
         String regressionContent;
 
-        public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath, String packageName) {
+        public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath, String packageName, String workingContent, String regressionContent) {
             this.baseDir = baseDir;
             this.workingCommit = workingCommit;
             this.regressionCommit = regressionCommit;
@@ -37,6 +37,8 @@ public class MinerProcessor extends BaseProcessor{
             this.regressionFilePath = regressionFilePath;
             this.outputPath = outputPath;
             this.packageName = packageName;
+            this.regressionContent = regressionContent;
+            this.workingContent = workingContent;
         }
     }
 
