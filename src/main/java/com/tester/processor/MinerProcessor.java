@@ -26,6 +26,8 @@ public class MinerProcessor extends BaseProcessor{
         String regressionFilePath;
         String outputPath;
         String packageName;
+        String workingContent;
+        String regressionContent;
 
         public MinerInfo(String baseDir, String workingCommit, String regressionCommit, String workingFilePath, String regressionFilePath, String outputPath, String packageName) {
             this.baseDir = baseDir;
@@ -61,6 +63,18 @@ public class MinerProcessor extends BaseProcessor{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String readWorkingProgram() {
+        return this.minerInfo.workingContent;
+//        return readProgram(getFilePath(BaseProcessor.getMAIN(), BaseProcessor.getWORKING(), ""));
+    }
+
+    @Override
+    public String readRegressionProgram() {
+        return this.minerInfo.regressionContent;
+//        return readProgram(getFilePath(BaseProcessor.getMAIN(), BaseProcessor.getREGRESSION(), ""));
     }
 
     @Override

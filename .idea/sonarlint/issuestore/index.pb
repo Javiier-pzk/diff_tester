@@ -19,3 +19,16 @@ d
 4src/main/java/com/tester/prompt/PromptGenerator.java,9\8\989f2fa17b7e84f2419d4841747e25f930ecef22
 e
 5src/main/java/com/tester/processor/TestProcessor.java,f\4\f4cc8104d21b5dd9936c2e224d83381814fd38f8
+q
+Asrc/main/java/com/tester/processor/MavenTestExecutionSummary.java,4\7\471989bd7906ad8eb90b08528d24573991b4d4d9
+q
+Asrc/test/java/com/tester/processor/TestTestProcessorBaseTest.java,a\5\a5659b76edf5c28c7ae3a0ee868f7df9f13a6a4e
+:
+
+.gitignore,a\5\a5cc2925ca8258af241be7e5b0381edf30266302
+i
+9src/main/java/com/tester/processor/MavenTestExecutor.java,c\8\c8de4a4dab961cc9000eb79f3f610fcdb9b480d3
+e
+5src/main/java/com/tester/processor/BaseProcessor.java,3\d\3dd1104c5f87f1a9db6442aeb32413a3337728cc
+f
+6src/main/java/com/tester/processor/MinerProcessor.java,a\5\a5ae08483b6107c954ecf3621bcb7b46c01d79bb

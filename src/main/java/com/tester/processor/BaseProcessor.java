@@ -269,7 +269,7 @@ public abstract class BaseProcessor {
     }
   }
 
-  private String readProgram(String filePath) {
+  String readProgram(String filePath) {
     try {
       List<String> lines = Files.readAllLines(Paths.get(filePath));
       return String.join(System.lineSeparator(), lines);
