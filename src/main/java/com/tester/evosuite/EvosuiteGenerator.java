@@ -12,6 +12,7 @@ public class EvosuiteGenerator {
 
     private String jarPath;
     private String outputPath;
+
     private Executor executor;
 
     public EvosuiteGenerator(String jarPath, String outputPath){
@@ -32,7 +33,8 @@ public class EvosuiteGenerator {
         String cmdBuilder = Conf.JAR_CMD + this.jarPath +
                 " -class " + classFullName +
                 " -Dtarget_method " + targetMethodName +
-                " -projectCP " + projectDir + File.separator + Conf.TARGET_CLASSES;
+                " -projectCP " + projectDir + File.separator + Conf.TARGET_CLASSES +
+                " -criterion branch";
 
         return executor.exec(cmdBuilder);
     }
