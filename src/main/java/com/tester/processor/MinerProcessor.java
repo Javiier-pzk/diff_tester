@@ -1,12 +1,5 @@
 package com.tester.processor;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
@@ -100,5 +93,4 @@ public class MinerProcessor extends BaseProcessor{
     protected String getPackageName(String type) {
         return PACKAGE + minerInfo.packageName + ";\n\n";
     }
-
 }

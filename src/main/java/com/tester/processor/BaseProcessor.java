@@ -111,7 +111,6 @@ public abstract class BaseProcessor {
     return readProgram(getFilePath(MAIN, REGRESSION, programFileName));
   }
 
-
   public String extractWorkingCoverageInfo(MavenTestExecutionSummary summary) {
     return extractTestCoverageInfo(summary, WORKING);
   }
