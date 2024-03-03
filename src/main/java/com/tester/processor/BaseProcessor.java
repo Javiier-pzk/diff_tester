@@ -20,18 +20,20 @@ public abstract class BaseProcessor {
 
   private static final String CODE_START = "```java\n";
   private static final String CODE_END = "```";
-  private static final String REGRESSION = "regression";
-  private static final String WORKING = "working";
-  private static final String SRC = "src/";
-  private static final String PACKAGE = "package ";
-  private static final String MAIN = "main/java/";
+
+  static final String REGRESSION = "regression";
+  static final String WORKING = "working";
+  static final String SRC = "src/";
+  static final String PACKAGE = "package ";
+  static final String MAIN = "main/java/";
   private static final String TEST = "test/java/";
-  private static final String CLASS = ".class";
-  private static final String EXAMPLES = "examples";
-  private static final String TARGET_DIR = "target/classes/";
-  private final String programFileName;
-  private final String testFileName;
+  static final String CLASS = ".class";
+  static final String EXAMPLES = "examples";
+  static final String TARGET_DIR = "target/classes/";
+  final String testFileName;
+
   private final String targetMethod;
+  private final String programFileName;
   private final Map<String, List<Integer>> suspiciousLines;
 
   public BaseProcessor(String programFileName,
@@ -44,10 +46,6 @@ public abstract class BaseProcessor {
     this.suspiciousLines = suspiciousLines;
   }
 
-  public static String getMAIN() {
-    return MAIN;
-  }
-
   public BaseProcessor(String programFileName,
                        String testFileName,
                        Map<String, List<Integer>> suspiciousLines) {
@@ -55,38 +53,6 @@ public abstract class BaseProcessor {
     this.testFileName = testFileName;
     this.targetMethod = "";
     this.suspiciousLines = suspiciousLines;
-  }
-
-  public static String getREGRESSION() {
-    return REGRESSION;
-  }
-
-  public static String getWORKING() {
-    return WORKING;
-  }
-
-  public static String getSRC() {
-    return SRC;
-  }
-
-  public static String getPACKAGE() {
-    return PACKAGE;
-  }
-
-  public static String getCLASS() {
-    return CLASS;
-  }
-
-  public static String getEXAMPLES() {
-    return EXAMPLES;
-  }
-
-  public static String getTargetDir() {
-    return TARGET_DIR;
-  }
-
-  public String getTestFileName() {
-    return testFileName;
   }
 
   public String extractException(Throwable e) {
@@ -145,7 +111,7 @@ public abstract class BaseProcessor {
       return;
     }
     String code = response.substring(startIndex + CODE_START.length(), endIndex);
-    writeTest2File(code);
+    writeTestToFile(code);
   }
 
   public MavenTestExecutionSummary runWorkingTest() throws MavenInvocationException {
@@ -284,7 +250,7 @@ public abstract class BaseProcessor {
     return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
   }
 
-  protected abstract void writeTest2File(String code);
+  protected abstract void writeTestToFile(String code);
 
   abstract String getFilePath(String dir, String type, String fileName);
 

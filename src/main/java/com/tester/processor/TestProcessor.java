@@ -17,29 +17,29 @@ public class TestProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void writeTest2File(String code) {
-        writeToFile(BaseProcessor.getWORKING(), code);
-        writeToFile(BaseProcessor.getREGRESSION(), code);
+    protected void writeTestToFile(String code) {
+        writeToFile(WORKING, code);
+        writeToFile(REGRESSION, code);
     }
 
     @Override
     String getFilePath(String dir, String type, String fileName) {
-        return BaseProcessor.getSRC() + dir + BaseProcessor.getEXAMPLES() + "/" + type + "/" + fileName;
+        return SRC + dir + EXAMPLES + "/" + type + "/" + fileName;
     }
 
     @Override
     String getClassPath(String type, String fileName) {
-        return BaseProcessor.getTargetDir() + BaseProcessor.getEXAMPLES() + "/" + type + "/" + getBaseName(fileName) + BaseProcessor.getCLASS();
+        return TARGET_DIR + EXAMPLES + "/" + type + "/" + getBaseName(fileName) + CLASS;
     }
 
     @Override
     String getQualifiedClassName(String type) {
-        return BaseProcessor.getEXAMPLES() + "." + type + "." + getBaseName(super.getTestFileName());
+        return EXAMPLES + "." + type + "." + getBaseName(testFileName);
     }
 
     @Override
     String getPackageName(String type) {
-        return BaseProcessor.getPACKAGE() + BaseProcessor.getEXAMPLES() + "." + type + ";\n\n";
+        return PACKAGE + EXAMPLES + "." + type + ";\n\n";
     }
 
 }
