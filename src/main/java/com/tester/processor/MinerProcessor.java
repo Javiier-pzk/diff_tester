@@ -51,20 +51,7 @@ public class MinerProcessor extends BaseProcessor{
 
     @Override
     protected void writeTestToFile(String code) {
-        byte[] codeBytes = code.getBytes();
-        byte[] packageNameBytes = minerInfo.packageName.getBytes();
-        try {
-            if (Files.exists(Paths.get(minerInfo.outputPath))) {
-                Files.delete(Paths.get(minerInfo.outputPath));
-            }
-            FileChannel channel = FileChannel.open(Paths.get(minerInfo.outputPath), StandardOpenOption.CREATE,
-                    StandardOpenOption.APPEND);
-            channel.write(ByteBuffer.wrap(packageNameBytes));
-            channel.write(ByteBuffer.wrap(codeBytes));
-            channel.force(true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeToFile(minerInfo.packageName, code, minerInfo.outputPath);
     }
 
     @Override
@@ -80,7 +67,7 @@ public class MinerProcessor extends BaseProcessor{
     }
 
     @Override
-    String getFilePath(String dir, String type, String fileName) {
+    protected String getFilePath(String dir, String type, String fileName) {
         if (WORKING.equals(type)) {
             return minerInfo.workingFilePath;
         } else {
@@ -90,32 +77,11 @@ public class MinerProcessor extends BaseProcessor{
 
     @Override
     public String extractFailures(List<MavenTestFailure> failures) {
-        StringBuilder sb = new StringBuilder();
-        for (MavenTestFailure failure : failures) {
-            sb.append("Method: ");
-            sb.append(failure.getMethodName());
-            sb.append("\n");
-            int lineNum = failure.getFailureLineNumber();
-            String filePath = minerInfo.outputPath;
-            String programLine = getProgramLine(lineNum, filePath);
-            sb.append("Line ");
-            sb.append(lineNum);
-            sb.append(": ");
-            sb.append(programLine);
-            sb.append("\n");
-            List<String> stackTrace = failure.getStackTrace();
-            int limit = Math.min(stackTrace.size(), 10);
-            sb.append("Exception:\n");
-            for (int i = 0; i < limit; i++) {
-                sb.append(stackTrace.get(i));
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
+        return extractFailures(failures, minerInfo.outputPath);
     }
 
     @Override
-    String getClassPath(String type, String fileName) {
+    protected String getClassPath(String type, String fileName) {
         String baseName;
         if (WORKING.equals(type)) {
             baseName = minerInfo.workingFilePath;
@@ -126,12 +92,12 @@ public class MinerProcessor extends BaseProcessor{
     }
 
     @Override
-    String getQualifiedClassName(String type) {
+    protected String getQualifiedClassName(String type) {
         return getBaseName(testFileName);
     }
 
     @Override
-    String getPackageName(String type) {
+    protected String getPackageName(String type) {
         return PACKAGE + minerInfo.packageName + ";\n\n";
     }
 

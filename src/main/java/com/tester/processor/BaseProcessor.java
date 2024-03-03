@@ -20,18 +20,17 @@ public abstract class BaseProcessor {
 
   private static final String CODE_START = "```java\n";
   private static final String CODE_END = "```";
+  protected static final String REGRESSION = "regression";
+  protected static final String WORKING = "working";
+  protected static final String SRC = "src/";
+  protected static final String PACKAGE = "package ";
+  protected static final String MAIN = "main/java/";
+  protected static final String TEST = "test/java/";
+  protected static final String CLASS = ".class";
+  protected static final String EXAMPLES = "examples";
+  protected static final String TARGET_DIR = "target/classes/";
 
-  static final String REGRESSION = "regression";
-  static final String WORKING = "working";
-  static final String SRC = "src/";
-  static final String PACKAGE = "package ";
-  static final String MAIN = "main/java/";
-  private static final String TEST = "test/java/";
-  static final String CLASS = ".class";
-  static final String EXAMPLES = "examples";
-  static final String TARGET_DIR = "target/classes/";
-  final String testFileName;
-
+  protected final String testFileName;
   private final String targetMethod;
   private final String programFileName;
   private final Map<String, List<Integer>> suspiciousLines;
@@ -68,29 +67,9 @@ public abstract class BaseProcessor {
     return sb.toString();
   }
 
-  public String extractFailures(List<MavenTestFailure> failures) {
-    StringBuilder sb = new StringBuilder();
-    for (MavenTestFailure failure : failures) {
-      sb.append("Method: ");
-      sb.append(failure.getMethodName());
-      sb.append("\n");
-      int lineNum = failure.getFailureLineNumber();
-      String filePath = getFilePath(TEST, WORKING, testFileName);
-      String programLine = getProgramLine(lineNum, filePath);
-      sb.append("Line ");
-      sb.append(lineNum);
-      sb.append(": ");
-      sb.append(programLine);
-      sb.append("\n");
-      List<String> stackTrace = failure.getStackTrace();
-      int limit = Math.min(stackTrace.size(), 10);
-      sb.append("Exception:\n");
-      for (int i = 0; i < limit; i++) {
-        sb.append(stackTrace.get(i));
-        sb.append("\n");
-      }
-    }
-    return sb.toString();
+  public String getBaseName(String fileName) {
+    int dotIndex = fileName.lastIndexOf('.');
+    return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
   }
 
   public void extractTest(String response) {
@@ -139,6 +118,63 @@ public abstract class BaseProcessor {
 
   public String extractRegressionCoverageInfo(MavenTestExecutionSummary summary) {
     return extractTestCoverageInfo(summary, REGRESSION);
+  }
+
+  protected void writeToFile(String packageName, String code, String filePath) {
+    byte[] codeBytes = code.getBytes();
+    byte[] packageNameBytes = packageName.getBytes();
+    try {
+      if (Files.exists(Paths.get(filePath))) {
+        Files.delete(Paths.get(filePath));
+      }
+      FileChannel channel = FileChannel.open(Paths.get(filePath), StandardOpenOption.CREATE,
+              StandardOpenOption.APPEND);
+      channel.write(ByteBuffer.wrap(packageNameBytes));
+      channel.write(ByteBuffer.wrap(codeBytes));
+      channel.force(true);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  protected String getProgramLine(int lineNum, String filePath) {
+    int currLineNum = 1;
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(filePath));
+      String line = reader.readLine();
+      while (line != null && currLineNum < lineNum) {
+        line = reader.readLine();
+        currLineNum++;
+      }
+      return line;
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "";
+    }
+  }
+
+  protected String extractFailures(List<MavenTestFailure> failures, String filePath) {
+    StringBuilder sb = new StringBuilder();
+    for (MavenTestFailure failure : failures) {
+      sb.append("Method: ");
+      sb.append(failure.getMethodName());
+      sb.append("\n");
+      int lineNum = failure.getFailureLineNumber();
+      String programLine = getProgramLine(lineNum, filePath);
+      sb.append("Line ");
+      sb.append(lineNum);
+      sb.append(": ");
+      sb.append(programLine);
+      sb.append("\n");
+      List<String> stackTrace = failure.getStackTrace();
+      int limit = Math.min(stackTrace.size(), 10);
+      sb.append("Exception:\n");
+      for (int i = 0; i < limit; i++) {
+        sb.append(stackTrace.get(i));
+        sb.append("\n");
+      }
+    }
+    return sb.toString();
   }
 
   private String extractTestCoverageInfo(MavenTestExecutionSummary summary, String type) {
@@ -200,42 +236,7 @@ public abstract class BaseProcessor {
     return sb.toString();
   }
 
-  void writeToFile(String type, String code) {
-    byte[] codeBytes = code.getBytes();
-    String packageName = getPackageName(type);
-    byte[] packageNameBytes = packageName.getBytes();
-    String filePath = getFilePath(TEST, type, testFileName);
-    try {
-      if (Files.exists(Paths.get(filePath))) {
-        Files.delete(Paths.get(filePath));
-      }
-      FileChannel channel = FileChannel.open(Paths.get(filePath), StandardOpenOption.CREATE,
-              StandardOpenOption.APPEND);
-      channel.write(ByteBuffer.wrap(packageNameBytes));
-      channel.write(ByteBuffer.wrap(codeBytes));
-      channel.force(true);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  String getProgramLine(int lineNum, String filePath) {
-    int currLineNum = 1;
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(filePath));
-      String line = reader.readLine();
-      while (line != null && currLineNum < lineNum) {
-        line = reader.readLine();
-        currLineNum++;
-      }
-      return line;
-    } catch (IOException e) {
-      e.printStackTrace();
-      return "";
-    }
-  }
-
-  String readProgram(String filePath) {
+  private String readProgram(String filePath) {
     try {
       List<String> lines = Files.readAllLines(Paths.get(filePath));
       return String.join(System.lineSeparator(), lines);
@@ -244,19 +245,15 @@ public abstract class BaseProcessor {
       return "";
     }
   }
-
-   public String getBaseName(String fileName) {
-    int dotIndex = fileName.lastIndexOf('.');
-    return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-  }
+  public abstract String extractFailures(List<MavenTestFailure> failures);
 
   protected abstract void writeTestToFile(String code);
 
-  abstract String getFilePath(String dir, String type, String fileName);
+  protected abstract String getFilePath(String dir, String type, String fileName);
 
-  abstract String getClassPath(String type, String fileName);
+  protected abstract String getClassPath(String type, String fileName);
 
-  abstract String getQualifiedClassName(String type);
+  protected abstract String getQualifiedClassName(String type);
 
-  abstract String getPackageName(String type);
+  protected abstract String getPackageName(String type);
 }
