@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.tester.processor.MinerProcessor;
 import org.junit.jupiter.api.Test;
 
 class DifferentialTesterTest {
@@ -31,6 +33,20 @@ class DifferentialTesterTest {
     DifferentialTester dt = new DifferentialTester(
             "RegressionExample.java", "RegressionExampleTest.java",
             "example123", suspiciousLines);
+    dt.run();
+  }
+
+  @Test
+  void runMinerRegressionExampleTest() {
+    Map<String, List<Integer>> suspiciousLines = new HashMap<String, List<Integer>>() {{
+      put("working", Collections.singletonList(6));
+      put("regression", Collections.singletonList(6));
+    }};
+    DifferentialTester dt = new DifferentialTester(
+            "RegressionExample.java", "RegressionExampleTest.java",
+            "example123", suspiciousLines, new MinerProcessor.MinerInfo(
+                    "","","","","","", "test","",""
+    ));
     dt.run();
   }
 }
