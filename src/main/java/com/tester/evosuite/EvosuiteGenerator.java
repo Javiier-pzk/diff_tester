@@ -1,6 +1,5 @@
 package com.tester.evosuite;
 
-import com.tester.conf.Conf;
 import com.tester.utils.executor.Executor;
 
 import java.io.File;
@@ -10,31 +9,27 @@ import java.io.File;
  */
 public class EvosuiteGenerator {
 
-  private final String jarPath;
-  private final String outputPath;
-  private final Executor executor;
+  private static final String CLASS_OPTION = " -class ";
+  private static final String TARGET_METHOD_OPTION = " -Dtarget_method \"";
+  private static final String PROJECT_CP_OPTION = " -projectCP ";
+  private static final String CRITERION_OPTION = " -criterion ";
+  private static final String EVOSUITE_JAR_PATH = "libs/evosuite-shaded-1.0.7-SNAPSHOT.jar";
+  private static final String TARGET_CLASSES = "target/classes";
+  private static final String JAR_CMD = "java -jar ";
+  private static final String MVN_COMPILE_TEST_CMD = "mvn compile test-compile";
+  private static final String BRANCH = "branch";
 
-  public EvosuiteGenerator(String jarPath, String outputPath) {
-    this.jarPath = jarPath.replace("\\", File.separator);
-    this.outputPath = outputPath.replace("\\", File.separator);
-    executor = new Executor();
-    File evosuiteTestFileDir = new File(this.outputPath);
-    if (!evosuiteTestFileDir.exists()) {
-      evosuiteTestFileDir.mkdirs();
-    }
-  }
-
-  public String generateWithCmd(String projectDir, String classFullName, String targetMethodName) {
-    executor.setDirectory(new File(projectDir));
-    executor.exec(Conf.MVN_COMPILE_TEST_CMD);
-
-    executor.setDirectory(new File(this.outputPath));
-    String cmdBuilder = Conf.JAR_CMD + this.jarPath +
-            " -class " + classFullName +
-            " -Dtarget_method " + targetMethodName +
-            " -projectCP " + Conf.TARGET_CLASSES +
-            " -criterion branch";
+  public static String generateWithCmd(String classFullName, String targetMethodName) {
+    Executor.exec(MVN_COMPILE_TEST_CMD);
+    String targetClasses = TARGET_CLASSES.replace("/", File.separator);
+    String evosuiteJarPath = EVOSUITE_JAR_PATH.replace("/", File.separator);
+    StringBuilder cmdBuilder = new StringBuilder();
+    cmdBuilder.append(JAR_CMD).append(evosuiteJarPath)
+            .append(CLASS_OPTION).append(classFullName)
+            .append(TARGET_METHOD_OPTION).append(targetMethodName).append("\"")
+            .append(PROJECT_CP_OPTION).append(targetClasses)
+            .append(CRITERION_OPTION).append(BRANCH);
     System.out.println(cmdBuilder);
-    return executor.exec(cmdBuilder);
+    return Executor.exec(cmdBuilder.toString());
   }
 }
