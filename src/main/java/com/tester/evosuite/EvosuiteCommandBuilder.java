@@ -25,11 +25,6 @@ public class EvosuiteCommandBuilder {
     return this;
   }
 
-  public  EvosuiteCommandBuilder withProjectCP(String projectCP) {
-    command += PROJECT_CP_OPTION + projectCP.replace("/", File.separator);
-    return this;
-  }
-
   public EvosuiteCommandBuilder withClass(String fullyQualifiedClassName) {
     command += CLASS_OPTION + fullyQualifiedClassName;
     return this;
