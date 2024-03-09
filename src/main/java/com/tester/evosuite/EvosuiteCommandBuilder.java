@@ -11,7 +11,7 @@ public class EvosuiteCommandBuilder {
   private static final String TARGET_METHOD_OPTION = " -Dtarget_method \"";
   private static final String PROJECT_CP_OPTION = " -projectCP ";
   private static final String CRITERION_OPTION = " -criterion ";
-  private static final String EVOSUITE_JAR_PATH = "libs/evosuite-shaded-1.0.7-SNAPSHOT.jar";
+  private static final String EVOSUITE_JAR_PATH = "libs/evosuite-1.1.0.jar";
   private static final String TARGET_CLASSES = "target/classes";
   private static final String JAR_CMD = "java -jar ";
   private String command;
