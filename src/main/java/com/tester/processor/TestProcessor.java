@@ -8,6 +8,7 @@ import java.util.regex.*;
 
 public class TestProcessor extends BaseProcessor {
 
+  private static final String EVOSUITE_TESTS_DIR = "evosuite-tests/";
   public TestProcessor(String programFileName, String testFileName, String targetMethod, Map<String, List<Integer>> suspiciousLines) {
     super(programFileName, testFileName, targetMethod, suspiciousLines);
   }
@@ -64,5 +65,13 @@ public class TestProcessor extends BaseProcessor {
       extractedItems.add(matcher.group(1).trim());
     }
     return extractedItems;
+  }
+
+  public String readEvosuiteTestSuite(String testSuitePath) {
+    return readProgram(testSuitePath);
+  }
+
+  private String getEvosuiteTestSuitePath(String fileName) {
+    return EVOSUITE_TESTS_DIR + EXAMPLES + fileName;
   }
 }

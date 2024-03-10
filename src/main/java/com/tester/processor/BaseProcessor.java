@@ -18,8 +18,6 @@ import org.jacoco.core.analysis.IMethodCoverage;
 
 public abstract class BaseProcessor {
 
-  private static final String CODE_START = "```java\n";
-  private static final String CODE_END = "```";
   protected static final String REGRESSION = "regression";
   protected static final String WORKING = "working";
   protected static final String SRC = "src/";
@@ -29,11 +27,13 @@ public abstract class BaseProcessor {
   protected static final String CLASS = ".class";
   protected static final String EXAMPLES = "examples";
   protected static final String TARGET_DIR = "target/classes/";
+  private static final String CODE_START = "```java\n";
+  private static final String CODE_END = "```";
 
   protected final String testFileName;
-  private final String targetMethod;
-  private final String programFileName;
-  private final Map<String, List<Integer>> suspiciousLines;
+  protected final String targetMethod;
+  protected final String programFileName;
+  protected final Map<String, List<Integer>> suspiciousLines;
 
   public BaseProcessor(String programFileName,
                        String testFileName,
@@ -125,6 +125,8 @@ public abstract class BaseProcessor {
     try {
       if (Files.exists(Paths.get(filePath))) {
         Files.delete(Paths.get(filePath));
+      } else {
+        Files.createDirectories(Paths.get(filePath).getParent());
       }
       FileChannel channel = FileChannel.open(Paths.get(filePath), StandardOpenOption.CREATE,
               StandardOpenOption.APPEND);
@@ -174,6 +176,16 @@ public abstract class BaseProcessor {
       }
     }
     return sb.toString();
+  }
+
+  protected String readProgram(String filePath) {
+    try {
+      List<String> lines = Files.readAllLines(Paths.get(filePath));
+      return String.join(System.lineSeparator(), lines);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "";
+    }
   }
 
   private String extractTestCoverageInfo(MavenTestExecutionSummary summary, String type) {
@@ -235,15 +247,6 @@ public abstract class BaseProcessor {
     return sb.toString();
   }
 
-  private String readProgram(String filePath) {
-    try {
-      List<String> lines = Files.readAllLines(Paths.get(filePath));
-      return String.join(System.lineSeparator(), lines);
-    } catch (IOException e) {
-      e.printStackTrace();
-      return "";
-    }
-  }
   public abstract String extractFailures(List<MavenTestFailure> failures);
 
   protected abstract void writeTestToFile(String code);
