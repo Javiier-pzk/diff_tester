@@ -99,4 +99,13 @@ class TestProcessorTest {
       System.out.println(s);
     }
   }
+
+  @Test
+  public void getProgramLinesTest() {
+    String filepath = "src/main/java/examples/regression/Label.java";
+    List<String> res = testProcessor.getProgramLines(suspiciousLines.get("regression"), filepath);
+    for (String s : res) {
+      System.out.println(s);
+    }
+  }
 }

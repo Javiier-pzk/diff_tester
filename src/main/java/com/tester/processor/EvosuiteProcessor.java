@@ -9,10 +9,9 @@ import java.util.*;
 public class EvosuiteProcessor extends BaseProcessor {
 
   private static final String EVOSUITE_OUTPUT_DIR = "evosuite-tests/";
-  private static final String EVOSUITE = "evosuite/";
   private static final String ES_TEST = "_ESTest";
   private static final String SCAFFOLDING = "_scaffolding";
-  private static final String TEST = "test/";
+  private static final String EVOSUITE_TEST = "test/evosuite/";
   private static final String JAVA = ".java";
   private static final String IMPORT = "import ";
   private static final String BRANCH = "branch";
@@ -32,7 +31,54 @@ public class EvosuiteProcessor extends BaseProcessor {
   }
 
   @Override
-  protected String readProgram(String filepath) {
+  public String extractFailures(List<MavenTestFailure> failures) {
+    return extractFailures(failures, getFilePath(TEST, WORKING, testFileName));
+  }
+
+  public void generateTest() {
+    EvosuiteCommandBuilder builder = new EvosuiteCommandBuilder()
+            .withDefaultProjectCP()
+            .withClass(getQualifiedClassName(WORKING))
+            .withCriterion(BRANCH);
+    if (!targetMethod.isEmpty()) {
+      builder.withTargetMethod(targetMethod);
+    }
+    EvosuiteInvoker.execute(builder.build());
+  }
+
+  public void extractTest() {
+    String testCode = readGeneratedTests(getEvosuiteGeneratedFilePath(testFileName));
+    String scaffoldingCode = readGeneratedTests(getEvosuiteGeneratedFilePath(scaffoldingFileName));
+    writeTestToFile(testCode);
+    writeScaffoldingCodeToFile(scaffoldingCode);
+  }
+
+  public String readTestSuite() {
+    return readProgram(getFilePath(EVOSUITE_TEST, WORKING, programFileName));
+  }
+
+  public String readWorkingSuspiciousLines() {
+    return readSuspiciousLines(WORKING);
+  }
+
+  public String readRegressionSuspiciousLines() {
+    return readSuspiciousLines(REGRESSION);
+  }
+
+  @Override
+  protected void writeTestToFile(String code) {
+    writeToFile(getPackageName(WORKING), code, getFilePath(EVOSUITE_TEST, WORKING, testFileName));
+    writeToFile(getPackageName(REGRESSION), code,
+            getFilePath(EVOSUITE_TEST, REGRESSION, testFileName));
+  }
+
+  private String readSuspiciousLines(String type) {
+    List<String> lines = getProgramLines(
+            suspiciousLines.get(type), getFilePath(MAIN, type, programFileName));
+    return String.join("\n", lines);
+  }
+
+  private String readGeneratedTests(String filepath) {
     StringBuilder sb = new StringBuilder();
     String importQualifiedClassName = IMPORT + getProgramQualifiedClassName(WORKING);
     try {
@@ -51,48 +97,14 @@ public class EvosuiteProcessor extends BaseProcessor {
     }
   }
 
-  @Override
-  public String extractFailures(List<MavenTestFailure> failures) {
-    return extractFailures(failures, getFilePath(TEST, WORKING, testFileName));
-  }
-
-  public void generateTest() {
-    EvosuiteCommandBuilder builder = new EvosuiteCommandBuilder()
-            .withDefaultProjectCP()
-            .withClass(getQualifiedClassName(WORKING))
-            .withCriterion(BRANCH);
-    if (!targetMethod.isEmpty()) {
-      builder.withTargetMethod(targetMethod);
-    }
-    EvosuiteInvoker.execute(builder.build());
-  }
-
-  public void extractTest() {
-    String testCode = readProgram(getEvosuiteGeneratedFilePath(testFileName));
-    String scaffoldingCode = readProgram(getEvosuiteGeneratedFilePath(scaffoldingFileName));
-    writeTestToFile(testCode);
-    writeScaffoldingCodeToFile(scaffoldingCode);
-  }
-
-  @Override
-  protected void writeTestToFile(String code) {
-    writeToFile(getPackageName(WORKING), code, getFilePath(TEST, WORKING, testFileName));
-    writeToFile(getPackageName(REGRESSION), code, getFilePath(TEST, REGRESSION, testFileName));
-  }
-
-  @Override
-  protected String getFilePath(String dir, String type, String fileName) {
-    return SRC + dir + EVOSUITE + EXAMPLES + "/" + type + "/" + fileName;
-  }
-
   private void writeScaffoldingCodeToFile(String code) {
     writeToFile(getPackageName(WORKING), code,
-            getFilePath(TEST, WORKING, scaffoldingFileName));
+            getFilePath(EVOSUITE_TEST, WORKING, scaffoldingFileName));
     String regressionCode = code.replace(
             getProgramQualifiedClassName(WORKING),
             getProgramQualifiedClassName(REGRESSION));
     writeToFile(getPackageName(REGRESSION), regressionCode,
-            getFilePath(TEST, REGRESSION, scaffoldingFileName));
+            getFilePath(EVOSUITE_TEST, REGRESSION, scaffoldingFileName));
   }
 
   private String getEvosuiteGeneratedFilePath(String fileName) {

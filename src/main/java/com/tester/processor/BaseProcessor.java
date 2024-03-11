@@ -8,9 +8,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -151,6 +150,28 @@ public abstract class BaseProcessor {
     } catch (IOException e) {
       e.printStackTrace();
       return "";
+    }
+  }
+
+  protected List<String> getProgramLines(List<Integer> lineNums, String filePath) {
+    int currLineNum = 1, i = 0;
+    List<String> res = new ArrayList<>();
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(filePath));
+      String line = reader.readLine();
+      while (line != null && i < lineNums.size()) {
+        int lineNum = lineNums.get(i);
+        if (currLineNum == lineNum) {
+          res.add(line);
+          i++;
+        }
+        line = reader.readLine();
+        currLineNum++;
+      }
+      return res;
+    } catch (IOException e) {
+      e.printStackTrace();
+      return Collections.emptyList();
     }
   }
 
