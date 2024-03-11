@@ -64,10 +64,11 @@ public class EvoLLMAgent {
     String coverage = evosuiteProcessor.extractWorkingCoverageInfo(generatedWorkingSummary);
     String prompt = PromptGenerator.getEvoLLMAgentPrompt(
             testSuite, workingSuspiciousLines, regressionSuspiciousLines, coverage);
+    logger.info("Prompt: " + prompt);
     while (true) {
       gpt.generate(prompt, Model.GPT4);
       String content = gpt.getLastMessage();
-      logger.info("Generated test\n: " + content);
+      logger.info("Response:\n " + content);
       evosuiteProcessor.extractTest(content);
       try {
         MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
@@ -93,10 +94,10 @@ public class EvoLLMAgent {
         if (workingPassed == 0 && workingFailed == 0) {
           prompt = PromptGenerator.getCompileErrorPrompt(failuresString);
         } else if (workingFailed > 0) {
-          prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
+          prompt = PromptGenerator.getEvoTestsFailedInWorkingPrompt(workingFailed, failuresString);
         } else if (regressionFailed == 0) {
           String coverageString = evosuiteProcessor.extractWorkingCoverageInfo(workingSummary);
-          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(coverageString);
+          prompt = PromptGenerator.getEvoNoTestsFailedInRegressionPrompt(coverageString);
         }
       } catch (MavenInvocationException e) {
         e.printStackTrace();
