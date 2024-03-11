@@ -1,2 +1,107 @@
-package com.tester;public class EvoLLMAgent {
+package com.tester;
+
+import com.tester.evosuite.*;
+import com.tester.gpt.*;
+import com.tester.processor.*;
+import com.tester.prompt.*;
+import org.apache.maven.shared.invoker.*;
+
+import java.util.*;
+import java.util.logging.*;
+
+public class EvoLLMAgent {
+
+  private final Gpt gpt;
+  private final Logger logger;
+  private final String targetMethod;
+  private final String fileName;
+  private final EvosuiteProcessor evosuiteProcessor;
+
+  public EvoLLMAgent(String fileName,
+                     String targetMethod,
+                     Map<String, List<Integer>> suspiciousLines) {
+    this.fileName = fileName;
+    this.targetMethod = targetMethod;
+    gpt = new Gpt();
+    evosuiteProcessor = new EvosuiteProcessor(fileName, targetMethod, suspiciousLines);
+    logger = Logger.getLogger(EvoLLMAgent.class.getName());
+    logger.setLevel(Level.INFO);
+  }
+
+  public EvoLLMAgent(String fileName, Map<String, List<Integer>> suspiciousLines) {
+    this.fileName = fileName;
+    this.targetMethod = "";
+    gpt = new Gpt();
+    evosuiteProcessor = new EvosuiteProcessor(fileName, suspiciousLines);
+    logger = Logger.getLogger(EvoLLMAgent.class.getName());
+    logger.setLevel(Level.INFO);
+  }
+
+  public void run() {
+    evosuiteProcessor.generateTest();
+    evosuiteProcessor.extractTest();
+    try {
+      MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
+      MavenTestExecutionSummary regressionSummary = evosuiteProcessor.runRegressionTest();
+      if (workingSummary.getTestsFailedCount() > 0) {
+        throw new IllegalStateException("Working version has failing Evosuite tests");
+      }
+      logger.info("All tests passed on working version");
+      if (regressionSummary.getTestsFailedCount() > 0) {
+        logger.info("Regression bug is detectable from Evosuite generated tests");
+        return;
+      }
+      logger.info("Regression is not detectable from Evosuite generated tests");
+      modifyTestsWithLLM(workingSummary);
+    } catch (MavenInvocationException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void modifyTestsWithLLM(MavenTestExecutionSummary generatedWorkingSummary) {
+    String testSuite =  evosuiteProcessor.readTestSuite();
+    String workingSuspiciousLines = evosuiteProcessor.readWorkingSuspiciousLines();
+    String regressionSuspiciousLines = evosuiteProcessor.readRegressionSuspiciousLines();
+    String coverage = evosuiteProcessor.extractWorkingCoverageInfo(generatedWorkingSummary);
+    String prompt = PromptGenerator.getEvoLLMAgentPrompt(
+            testSuite, workingSuspiciousLines, regressionSuspiciousLines, coverage);
+    while (true) {
+      gpt.generate(prompt, Model.GPT4);
+      String content = gpt.getLastMessage();
+      logger.info("Generated test\n: " + content);
+      evosuiteProcessor.extractTest(content);
+      try {
+        MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
+        MavenTestExecutionSummary regressionSummary = evosuiteProcessor.runRegressionTest();
+        long workingPassed = workingSummary.getTestsSucceededCount();
+        long workingFailed = workingSummary.getTestsFailedCount();
+        long regressionPassed = regressionSummary.getTestsSucceededCount();
+        long regressionFailed = regressionSummary.getTestsFailedCount();
+        logger.info(
+                "Tests passed on working version: " + workingPassed + "\n" +
+                        "Tests passed on regression version: " + regressionPassed + "\n" +
+                        "Tests failed on working version: " + workingFailed + "\n" +
+                        "Tests failed on regression version: " + regressionFailed + "\n");
+        boolean isSuccess = workingFailed == 0 && regressionFailed > 0;
+        if (isSuccess) {
+          logger.info("Successfully detected regression bug. " +
+                  "View the generated test in " + fileName);
+          break;
+        }
+        logger.info("Failed to detect regression bug. Re-prompting...\n");
+        List<MavenTestFailure> failures = workingSummary.getFailures();
+        String failuresString = evosuiteProcessor.extractFailures(failures);
+        if (workingPassed == 0 && workingFailed == 0) {
+          prompt = PromptGenerator.getCompileErrorPrompt(failuresString);
+        } else if (workingFailed > 0) {
+          prompt = PromptGenerator.getTestsFailedInWorkingPrompt(workingFailed, failuresString);
+        } else if (regressionFailed == 0) {
+          String coverageString = evosuiteProcessor.extractWorkingCoverageInfo(workingSummary);
+          prompt = PromptGenerator.getNoTestsFailedInRegressionPrompt(coverageString);
+        }
+      } catch (MavenInvocationException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }
