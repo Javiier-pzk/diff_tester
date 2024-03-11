@@ -1,6 +1,5 @@
 package com.tester;
 
-import com.tester.evosuite.*;
 import com.tester.gpt.*;
 import com.tester.processor.*;
 import com.tester.prompt.*;
