@@ -247,15 +247,23 @@ public abstract class BaseProcessor {
     return sb.toString();
   }
 
+  protected String getFilePath(String dir, String type, String fileName) {
+    return SRC + dir + EXAMPLES + "/" + type + "/" + fileName;
+  }
+
+  protected String getClassPath(String type, String fileName) {
+    return TARGET_DIR + EXAMPLES + "/" + type + "/" + getBaseName(fileName) + CLASS;
+  }
+
+  protected String getQualifiedClassName(String type) {
+    return EXAMPLES + "." + type + "." + getBaseName(testFileName);
+  }
+
+  protected String getPackageName(String type) {
+    return PACKAGE + EXAMPLES + "." + type + ";\n\n";
+  }
+
   public abstract String extractFailures(List<MavenTestFailure> failures);
 
   protected abstract void writeTestToFile(String code);
-
-  protected abstract String getFilePath(String dir, String type, String fileName);
-
-  protected abstract String getClassPath(String type, String fileName);
-
-  protected abstract String getQualifiedClassName(String type);
-
-  protected abstract String getPackageName(String type);
 }
