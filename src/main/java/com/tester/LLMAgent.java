@@ -24,7 +24,7 @@ public class LLMAgent {
     this.targetMethod = targetMethod;
     gpt = new Gpt();
     testProcessor = new TestProcessor(programFileName, testFileName, targetMethod, suspiciousLines);
-    logger = Logger.getLogger(DifferentialTester.class.getName());
+    logger = Logger.getLogger(LLMAgent.class.getName());
     logger.setLevel(Level.INFO);
   }
 
