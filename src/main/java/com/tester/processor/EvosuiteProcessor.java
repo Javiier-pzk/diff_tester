@@ -54,7 +54,7 @@ public class EvosuiteProcessor extends BaseProcessor {
   }
 
   public String readTestSuite() {
-    return readProgram(getFilePath(EVOSUITE_TEST, WORKING, programFileName));
+    return readProgram(getFilePath(EVOSUITE_TEST, WORKING, testFileName));
   }
 
   public String readWorkingSuspiciousLines() {
