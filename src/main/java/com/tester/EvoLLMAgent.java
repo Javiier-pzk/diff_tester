@@ -37,8 +37,8 @@ public class EvoLLMAgent {
   }
 
   public void run() {
-    evosuiteProcessor.generateTest();
-    evosuiteProcessor.extractTest();
+//    evosuiteProcessor.generateTest();
+//    evosuiteProcessor.extractTest();
     try {
       MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
       MavenTestExecutionSummary regressionSummary = evosuiteProcessor.runRegressionTest();
@@ -65,11 +65,57 @@ public class EvoLLMAgent {
     String prompt = PromptGenerator.getEvoLLMAgentPrompt(
             testSuite, workingSuspiciousLines, regressionSuspiciousLines, coverage);
     logger.info("Prompt: " + prompt);
+    gpt.generate(prompt, Model.GPT4);
+    String content = gpt.getLastMessage();
+    runSubtask(content);
+    runImplementation();
+  }
+
+  private void runSubtask(String response) {
+    List<String> subtasks = evosuiteProcessor.extractSubtasks(response);
+    for (String subtask : subtasks) {
+      logger.info("\n\nSubtask: " + subtask + "\n");
+      String prompt = PromptGenerator.getSubtaskPrompt(subtask);
+      gpt.generate(prompt, Model.GPT4);
+      boolean isDecomposable = gpt.getLastMessage().contains("Yes");
+      if (isDecomposable) {
+        logger.info("decomposable");
+        prompt = PromptGenerator.getFurtherDecompositionNeededPrompt(subtask);
+        gpt.generate(prompt, Model.GPT4);
+        runSubtask(gpt.getLastMessage());
+        continue;
+      }
+      logger.info("not decomposable");
+      prompt = PromptGenerator.getNoFurtherDecompositionPrompt(subtask);
+      gpt.generate(prompt, Model.GPT4);
+      boolean isImplementable = gpt.getLastMessage().equals("Yes");
+      if (!isImplementable) {
+        logger.info("not implementable");
+        continue;
+      }
+      logger.info("implementable");
+      prompt = PromptGenerator.getImplementablePrompt(subtask);
+      gpt.generate(prompt, Model.GPT4);
+      String implementation = gpt.getLastMessage();
+      logger.info("Implementation: " + implementation);
+    }
+  }
+
+  public void runImplementation() {
+    String testFileName = evosuiteProcessor.getTestFileName();
+    String prompt = PromptGenerator.getEvoFullImplementationPrompt(
+            evosuiteProcessor.getBaseName(testFileName));
     while (true) {
       gpt.generate(prompt, Model.GPT4);
-      String content = gpt.getLastMessage();
-      logger.info("Response:\n " + content);
-      evosuiteProcessor.extractTest(content);
+      String implementation = gpt.getLastMessage();
+      evosuiteProcessor.extractTest(implementation);
+      logger.info("Implementation: " + implementation);
+      String fileExtension = evosuiteProcessor.getExtension(testFileName);
+      if (!fileExtension.equals(".java")) {
+        logger.info("Successfully generated test. " +
+                "View the generated test in " + testFileName);
+        break;
+      }
       try {
         MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
         MavenTestExecutionSummary regressionSummary = evosuiteProcessor.runRegressionTest();

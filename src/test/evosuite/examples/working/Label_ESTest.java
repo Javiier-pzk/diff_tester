@@ -42,20 +42,48 @@ public class Label_ESTest extends Label_ESTest_scaffolding {
       assertFalse(boolean0);
   }
 
+  // Newly added test cases
   @Test(timeout = 4000)
-  public void test3()  throws Throwable  {
-      Label label0 = new Label((String[]) null, (String[]) null);
-      boolean boolean0 = label0.apply("g;e6hFKdge^<%-8z2)e");
-      assertTrue(boolean0);
+  public void labelInExcludes()  throws Throwable  {
+    String[] includesArray = new String[] { "includedLabel1", "includedLabel2", "includedLabel3" };
+    String[] excludesArray = new String[] { "excludedLabel" };
+    Label label0 = new Label(includesArray, excludesArray);
+    assertFalse(label0.apply("excludedLabel"));
   }
 
   @Test(timeout = 4000)
-  public void test4() throws Throwable  {
-      String[] stringArray0 = new String[1];
-      stringArray0[0] = "testLabel";
-      String[] stringArray1 = new String[1];
-      Label label0 = new Label(stringArray0, stringArray1);
-      boolean boolean0 = label0.apply("testLabel");
-      assertFalse(boolean0);
+  public void labelNotInExcludesButInIncludes()  throws Throwable  {
+    String[] includesArray = new String[] { "includedLabel" };
+    String[] excludesArray = new String[] { "excludedLabel" };
+    Label label0 = new Label(includesArray, excludesArray);
+    assertTrue(label0.apply("includedLabel"));
+  }
+
+  @Test(timeout = 4000)
+  public void labelNotInAnyArray()  throws Throwable  {
+    String[] includesArray = new String[] { "includedLabel" };
+    String[] excludesArray = new String[] { "excludedLabel" };
+    Label label0 = new Label(includesArray, excludesArray);
+    assertFalse(label0.apply("notInAnyArrayLabel"));
+  }
+
+  @Test(timeout = 4000)
+  public void excludesIsNullButLabelInIncludes()  throws Throwable  {
+    String[] includesArray = new String[] { "includedLabel" };
+    Label label0 = new Label(includesArray, null);
+    assertTrue(label0.apply("includedLabel"));
+  }
+
+  @Test(timeout = 4000)
+  public void includesIsNull()  throws Throwable  {
+    String[] excludesArray = new String[] { "excludedLabel" };
+    Label label0 = new Label(null, excludesArray);
+    assertTrue(label0.apply("notExcludedLabel"));
+  }
+
+  @Test(timeout = 4000)
+  public void bothArraysAreNull()  throws Throwable  {
+    Label label0 = new Label(null, null);
+    assertTrue(label0.apply("anyLabel"));
   }
 }

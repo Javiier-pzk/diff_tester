@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.regex.*;
 
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.jacoco.core.analysis.IClassCoverage;
@@ -116,6 +117,27 @@ public abstract class BaseProcessor {
 
   public String extractRegressionCoverageInfo(MavenTestExecutionSummary summary) {
     return extractTestCoverageInfo(summary, REGRESSION);
+  }
+
+  public List<String> extractSubtasks(String input) {
+    String regex = "(?m)^\\d+\\.\\s+(.*)$";
+    Pattern pattern = Pattern.compile(regex);
+    Matcher matcher = pattern.matcher(input);
+
+    List<String> extractedItems = new ArrayList<>();
+    while (matcher.find()) {
+      extractedItems.add(matcher.group(1).trim());
+    }
+    return extractedItems;
+  }
+
+  public String getExtension(String fileName) {
+    int dotIndex = fileName.lastIndexOf('.');
+    return (dotIndex == -1) ? "" : fileName.substring(dotIndex);
+  }
+
+  public String getTestFileName() {
+    return testFileName;
   }
 
   protected void writeToFile(String packageName, String code, String filePath) {

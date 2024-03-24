@@ -28,21 +28,4 @@ public class TestProcessor extends BaseProcessor {
     writeToFile(getPackageName(WORKING), code, getFilePath(TEST, WORKING, testFileName));
     writeToFile(getPackageName(REGRESSION), code, getFilePath(TEST, REGRESSION, testFileName));
   }
-
-  public String getExtension(String fileName) {
-    int dotIndex = fileName.lastIndexOf('.');
-    return (dotIndex == -1) ? "" : fileName.substring(dotIndex);
-  }
-
-  public List<String> extractSubtasks(String input) {
-    String regex = "(?m)^\\d+\\.\\s+(.*)$";
-    Pattern pattern = Pattern.compile(regex);
-    Matcher matcher = pattern.matcher(input);
-
-    List<String> extractedItems = new ArrayList<>();
-    while (matcher.find()) {
-      extractedItems.add(matcher.group(1).trim());
-    }
-    return extractedItems;
-  }
 }
