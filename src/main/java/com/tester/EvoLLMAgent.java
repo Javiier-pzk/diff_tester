@@ -37,8 +37,8 @@ public class EvoLLMAgent {
   }
 
   public void run() {
-//    evosuiteProcessor.generateTest();
-//    evosuiteProcessor.extractTest();
+    evosuiteProcessor.generateTest();
+    evosuiteProcessor.extractTest();
     try {
       MavenTestExecutionSummary workingSummary = evosuiteProcessor.runWorkingTest();
       MavenTestExecutionSummary regressionSummary = evosuiteProcessor.runRegressionTest();
