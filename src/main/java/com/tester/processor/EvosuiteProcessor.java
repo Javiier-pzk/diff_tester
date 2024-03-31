@@ -38,7 +38,7 @@ public class EvosuiteProcessor extends BaseProcessor {
   public void generateTest() {
     EvosuiteCommandBuilder builder = new EvosuiteCommandBuilder()
             .withDefaultProjectCP()
-            .withClass(getQualifiedClassName(WORKING))
+            .withClass(getProgramQualifiedClassName(WORKING))
             .withCriterion(BRANCH);
     if (!targetMethod.isEmpty()) {
       builder.withTargetMethod(targetMethod);

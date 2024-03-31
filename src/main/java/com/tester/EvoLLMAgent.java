@@ -137,7 +137,7 @@ public class EvoLLMAgent {
         logger.info("Failed to detect regression bug. Re-prompting...\n");
         List<MavenTestFailure> failures = workingSummary.getFailures();
         String failuresString = evosuiteProcessor.extractFailures(failures);
-        if (workingPassed == 0 && workingFailed == 0) {
+        if (workingFailed == -1 || regressionFailed == -1) {
           prompt = PromptGenerator.getCompileErrorPrompt(failuresString);
         } else if (workingFailed > 0) {
           prompt = PromptGenerator.getEvoTestsFailedInWorkingPrompt(workingFailed, failuresString);
